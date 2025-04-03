@@ -264,7 +264,7 @@ const handleImageUpload = async (e: Event) => {
   try {
     const { width, height } = await getImageDimensions(file)
     const imageUrl = URL.createObjectURL(file)
-    const screen = createScreen(file.name, imageUrl, width, height)
+    const screen = createScreen(imageUrl, width, height)
     screens.value.push(screen)
     target.value = ''
   } catch (error) {
@@ -273,7 +273,7 @@ const handleImageUpload = async (e: Event) => {
   }
 }
 
-const createScreen = (filename: string, imageUrl, width: number, height: number): Screen => ({
+const createScreen = (imageUrl: string, width: number, height: number): Screen => ({
   index: screens.value.length,
   imageUrl,
   width,
@@ -470,8 +470,8 @@ const endMove = () => {
 const exportAll = () => {
   const exportData = screens.value.map((screen) => ({
     index: screen.index,
+    imageUrl: screen.imageUrl,
     status: screen.status,
-    image: screen.filename,
     width: screen.width,
     height: screen.height,
     notes: screen.selections.map((s) => ({
