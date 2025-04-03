@@ -10,9 +10,9 @@
       />
       <input type="file" id="importInput" accept=".json" />
       <button
-        id="exportBtn"
+        :disabled="screens.length === 0"
+        @click="exportAll"
         class="px-4 py-2 bg-green-500 text-white rounded cursor-pointer"
-        disabled
       >
         Export All
       </button>
@@ -49,20 +49,24 @@
               <div
                 v-for="(selection, sIndex) in screen.selections"
                 :key="sIndex"
-                class="selection-box absolute border-2 border-dashed border-red-500 bg-red-100/10 cursor-move"
+                class="selection-box group absolute border-2 border-red-500 hover:border-red-400 hover:z-[10000] bg-black/10 cursor-move rounded-md"
                 :style="selectionStyle(selection)"
                 @mousedown.stop="startMove($event, screen, selection)"
               >
+                <span
+                  class="w-5 h-5 text-center mt-1 ml-1 inline-block bg-red-500 rounded-full text-sm font-bold text-white"
+                  >{{ selection.number }}</span
+                >
                 <div
-                  class="selection-label bg-white/80 px-1.5 py-0.5 text-xs pointer-events-none"
-                  :style="{ left: '20px', top: '20px' }"
+                  v-if="selection.msg?.trim()"
+                  class="absolute w-screen max-w-[350px] break-words left-[75%] bottom-[110%] shadow-md border-2 border-orange-500 rounded-md bg-white/80 p-2 text-base hidden group-hover:block after:absolute after:bottom-[-16px] after:left-2 after:border-8 after:border-transparent after:border-t-orange-500"
                 >
                   {{ selection.msg }}
                 </div>
                 <div
                   v-for="corner in ['top-left', 'top-right', 'bottom-right', 'bottom-left']"
                   :key="corner"
-                  class="resize-handle absolute w-2 h-2 bg-red-500"
+                  class="resize-handle opacity-0 absolute w-2 h-2 bg-red-500"
                   :class="resizeHandleClass(corner)"
                   @mousedown.stop="startResize($event, screen, selection, corner)"
                 ></div>
@@ -87,6 +91,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
 interface Selection {
+  number: number
   x: number
   y: number
   width: number
@@ -99,9 +104,9 @@ interface Screen {
   imageUrl: string
   width: number
   height: number
-  selections: Selection[]
   addingRectangle: boolean
   status: string
+  selections: Selection[]
 }
 
 const screens = ref<Screen[]>([])
@@ -153,6 +158,48 @@ const triggerImageInput = () => imageInput.value?.click()
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024 // 4.5MB
 
+// const handleImageUpload = async (e: Event) => {
+//   const target = e.target as HTMLInputElement
+//   const file = target.files?.[0]
+
+//   if (!file) return
+
+//   if (file.size > MAX_FILE_SIZE) {
+//     alert('File size must be under 1MB')
+//     return
+//   }
+
+//   try {
+//     const formData = new FormData()
+//     formData.append('file', file)
+//     const response = await fetch('/api/upload', {
+//       method: 'POST',
+//       body: formData,
+//     })
+
+//     if (!response.ok) {
+//       throw new Error('Upload failed')
+//     }
+
+//     const { url, width, height } = await response.json()
+
+//     if (!url) {
+//       alert('Cannot upload file')
+//       return
+//     }
+
+//     // Create a screen object with uploaded file URL
+//     const screen = createScreen(file.name, url, width, height)
+//     screens.value.push(screen)
+
+//     // Reset the file input correctly
+//     target.value = ''
+//   } catch (error) {
+//     console.error('Error uploading file:', error)
+//     alert('Failed to upload file')
+//   }
+// }
+
 const handleImageUpload = async (e: Event) => {
   const target = e.target as HTMLInputElement
   const file = target.files?.[0]
@@ -160,63 +207,50 @@ const handleImageUpload = async (e: Event) => {
   if (!file) return
 
   if (file.size > MAX_FILE_SIZE) {
-    alert('File size must be under 1MB')
+    alert('File size must be under 4.5MB')
     return
   }
 
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
+  const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const imageUrl = URL.createObjectURL(file)
+      img.onload = () => {
+        const dimensions = {
+          width: img.width,
+          height: img.height,
+        }
+        URL.revokeObjectURL(imageUrl)
+        resolve(dimensions)
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(imageUrl)
+        reject(new Error('Failed to load image'))
+      }
+      img.src = imageUrl
     })
+  }
 
-    if (!response.ok) {
-      throw new Error('Upload failed')
-    }
-
-    const { url, width, height } = await response.json()
-
-    if (!url) {
-      alert('Cannot upload file')
-      return
-    }
-
-    // Create a screen object with uploaded file URL
-    const screen = createScreen(file.name, url, width, height)
+  try {
+    const { width, height } = await getImageDimensions(file)
+    const imageUrl = URL.createObjectURL(file)
+    const screen = createScreen(file.name, imageUrl, width, height)
     screens.value.push(screen)
-
-    // Reset the file input correctly
     target.value = ''
   } catch (error) {
-    console.error('Error uploading file:', error)
-    alert('Failed to upload file')
+    console.error('Error processing image:', error)
+    alert('Failed to process the image')
   }
 }
-
-// const handleImport = (e: Event) => {
-//   const target = e.target as HTMLInputElement
-//   const file = target.files?.[0]
-//   if (file) {
-//     const reader = new FileReader()
-//     reader.onload = (event) => {
-//       const importedData = JSON.parse(event.target?.result as string)
-//       importScreens(importedData)
-//       target.value = ''
-//     }
-//     reader.readAsText(file)
-//   }
-// }
 
 const createScreen = (filename: string, imageUrl, width: number, height: number): Screen => ({
   index: screens.value.length,
   imageUrl,
   width,
   height,
-  selections: [],
-  addingRectangle: false,
   status: 'new',
+  addingRectangle: false,
+  selections: [],
 })
 
 const selectionStyle = (selection: Selection) => ({
@@ -255,12 +289,23 @@ const startAction = (e: MouseEvent) => {
   if (target.classList.contains('resize-handle')) return
   if (target.classList.contains('selection-box')) return
 
+  const totalSelections = screens.value.reduce(
+    (count, screen) => count + screen.selections.length,
+    0,
+  )
+
   if (screen.addingRectangle && target.classList.contains('target-image')) {
     const rect = target.getBoundingClientRect()
     state.isDragging = true
     state.startX = e.clientX - rect.left
     state.startY = e.clientY - rect.top
-    state.currentBox = { x: state.startX, y: state.startY, width: 0, height: 0 }
+    state.currentBox = {
+      number: totalSelections + 1,
+      x: state.startX,
+      y: state.startY,
+      width: 0,
+      height: 0,
+    }
     state.currentScreen = screen
     screen.selections.push(state.currentBox)
   }
@@ -373,6 +418,7 @@ const endAction = (e: MouseEvent) => {
   else if (state.isMoving) endMove()
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const endSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return
   state.isDragging = false
@@ -394,6 +440,33 @@ const endMove = () => {
   state.isMoving = false
   state.currentBox = null
   state.currentScreen = null
+}
+
+const exportAll = () => {
+  const exportData = screens.value.map((screen) => ({
+    index: screen.index,
+    status: screen.status,
+    image: screen.filename,
+    width: screen.width,
+    height: screen.height,
+    notes: screen.selections.map((s) => ({
+      number: s.number,
+      x: Math.round(s.x),
+      y: Math.round(s.y),
+      w: Math.round(s.width),
+      h: Math.round(s.height),
+      msg: s.msg || '',
+    })),
+  }))
+
+  const jsonString = JSON.stringify(exportData, null, 2)
+  const blob = new Blob([jsonString], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'all_screens.json'
+  a.click()
+  URL.revokeObjectURL(url)
 }
 </script>
 
