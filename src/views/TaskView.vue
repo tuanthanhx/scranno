@@ -58,10 +58,10 @@
             class="screen-container"
             :data-index="index"
           >
-            <div class="controls">
+            <div class="controls" :class="{ 'is-adding': screen.addingRectangle }">
               <button
                 @click="screen.addingRectangle = true"
-                class="px-2 py-1 mb-3 bg-green-500 text-white rounded"
+                class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
               >
                 [Add Note]
               </button>
@@ -99,6 +99,7 @@
                   ></div>
                 </div>
               </div>
+              <!-- <div class="max-h-[200px] overflow-auto border-gray-900 border-1"><pre>{{ screen }}</pre></div> -->
             </div>
           </div>
         </div>
@@ -495,4 +496,18 @@ const exportAll = () => {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+
+.controls.is-adding .target-image {
+  cursor: crosshair;
+}
+.controls.is-adding .button-add-note {
+  opacity: 0;
+  visibility: hidden;
+}
+.controls.is-adding .selection-box {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+</style>
