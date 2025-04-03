@@ -1,94 +1,120 @@
 <template>
-  <div class="bg-gray-50 min-h-screen max-w-[1280px] px-5">
-    <div class="controls py-5">
-      <input
-        ref="imageInput"
-        type="file"
-        accept="image/*"
-        class="hidden"
-        @change="handleImageUpload"
-      />
-      <input type="file" id="importInput" accept=".json" />
-      <button
-        :disabled="screens.length === 0"
-        @click="exportAll"
-        class="px-4 py-2 bg-green-500 text-white rounded cursor-pointer"
-      >
-        Export All
-      </button>
-    </div>
-    <div
-      id="screens"
-      class="py-5 bg-gray-100"
-      ref="screensContainer"
-      @mousedown="startAction"
-      @dragstart.prevent
-    >
+  <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
+    <aside class="flex-[300px_0_0] bg-orange-500">
       <div
-        v-for="(screen, index) in screens"
-        :key="index"
-        class="screen-container my-5 border border-gray-300 p-2.5"
-        :data-index="index"
+        class="fixed top-0 left-0 w-[300px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
-        <div class="controls mb-2.5">
-          <button
-            @click="screen.addingRectangle = true"
-            class="px-2 py-1 mb-3 bg-green-500 text-white rounded"
-          >
-            [Add Note]
-          </button>
-          <div class="overflow-hidden">
-            <div class="relative select-none">
-              <img
-                ref="imageRefs"
-                :src="screen.imageUrl"
-                :width="screen.width"
-                :height="screen.height"
-                class="target-image"
-              />
-              <div
-                v-for="(selection, sIndex) in screen.selections"
-                :key="sIndex"
-                class="selection-box group absolute border-2 border-red-500 hover:border-red-400 hover:z-[10000] bg-black/10 cursor-move rounded-md"
-                :style="selectionStyle(selection)"
-                @mousedown.stop="startMove($event, screen, selection)"
-              >
-                <span
-                  class="w-5 h-5 text-center mt-1 ml-1 inline-block bg-red-500 rounded-full text-sm font-bold text-white"
-                  >{{ selection.number }}</span
-                >
+        <div v-for="(screen, index) in screens" :key="index" :data-index="index">
+          <h2 class="font-bold mb-5 text-center bg-blue-200 p-2">Screen {{ index + 1 }}</h2>
+          <div class="px-4">
+            <ul class="space-y-4">
+              <li v-for="(selection, sIndex) in screen.selections" :key="sIndex" class="flex">
                 <div
-                  v-if="selection.msg?.trim()"
-                  class="absolute w-screen max-w-[350px] break-words left-[75%] bottom-[110%] shadow-md border-2 border-orange-500 rounded-md bg-white/80 p-2 text-base hidden group-hover:block after:absolute after:bottom-[-16px] after:left-2 after:border-8 after:border-transparent after:border-t-orange-500"
+                  class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center bg-red-500 rounded-full text-xs font-bold text-white"
                 >
-                  {{ selection.msg }}
+                  {{ selection.number }}
                 </div>
-                <div
-                  v-for="corner in ['top-left', 'top-right', 'bottom-right', 'bottom-left']"
-                  :key="corner"
-                  class="resize-handle opacity-0 absolute w-2 h-2 bg-red-500"
-                  :class="resizeHandleClass(corner)"
-                  @mousedown.stop="startResize($event, screen, selection, corner)"
-                ></div>
-              </div>
-            </div>
-            <div>
-              <pre class="overflow-auto">{{ screen }}</pre>
-            </div>
+                <div class="flex-1 overflow-hidden">
+                  <div>{{ selection.msg }}</div>
+                  <div class="mt-2 hidden">
+                    <IconList />
+                  </div>
+                </div>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-    </div>
-    <div class="footer-controls py-5">
-      <button @click="triggerImageInput" class="px-4 py-2 bg-blue-500 text-white rounded">
-        Add Screen
-      </button>
-    </div>
+    </aside>
+    <main class="w-full">
+      <div class="mx-auto w-full max-w-[1200px]">
+        <div class="controls py-5 hidden">
+          <input
+            ref="imageInput"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="handleImageUpload"
+          />
+          <input type="file" id="importInput" accept=".json" />
+          <button
+            :disabled="screens.length === 0"
+            @click="exportAll"
+            class="px-4 py-2 bg-green-500 text-white rounded cursor-pointer"
+          >
+            Export All
+          </button>
+        </div>
+        <div
+          id="screens"
+          class="space-y-10 py-5"
+          ref="screensContainer"
+          @mousedown="startAction"
+          @dragstart.prevent
+        >
+          <div
+            v-for="(screen, index) in screens"
+            :key="index"
+            class="screen-container"
+            :data-index="index"
+          >
+            <div class="controls">
+              <button
+                @click="screen.addingRectangle = true"
+                class="px-2 py-1 mb-3 bg-green-500 text-white rounded"
+              >
+                [Add Note]
+              </button>
+              <div class="relative select-none">
+                <img
+                  ref="imageRefs"
+                  :src="screen.imageUrl"
+                  :width="screen.width"
+                  :height="screen.height"
+                  class="target-image"
+                />
+                <div
+                  v-for="(selection, sIndex) in screen.selections"
+                  :key="sIndex"
+                  class="selection-box group absolute border-2 border-red-500 hover:border-red-500/50 hover:z-[10000] bg-black/10 cursor-move rounded-md"
+                  :style="selectionStyle(selection)"
+                  @mousedown.stop="startMove($event, screen, selection)"
+                >
+                  <span
+                    class="w-6 h-6 mt-1 ml-1 flex justify-center items-center bg-red-500 rounded-full text-xs font-bold text-white group-hover:opacity-20"
+                    >{{ selection.number }}</span
+                  >
+                  <div
+                    v-if="selection.msg?.trim()"
+                    class="absolute w-screen max-w-[350px] break-words left-[75%] bottom-[110%] shadow-md border-2 border-orange-500 rounded-md bg-white/80 p-2 text-base hidden group-hover:block after:absolute after:bottom-[-16px] after:left-2 after:border-8 after:border-transparent after:border-t-orange-500"
+                  >
+                    {{ selection.msg }}
+                  </div>
+                  <div
+                    v-for="corner in ['top-left', 'top-right', 'bottom-right', 'bottom-left']"
+                    :key="corner"
+                    class="resize-handle opacity-0 absolute w-2 h-2 bg-red-500"
+                    :class="resizeHandleClass(corner)"
+                    @mousedown.stop="startResize($event, screen, selection, corner)"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer-controls py-5">
+          <button @click="triggerImageInput" class="px-4 py-2 bg-blue-500 text-white rounded">
+            Add Screen
+          </button>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import IconList from '@/components/IconList.vue'
 
 interface Selection {
   number: number
@@ -126,6 +152,10 @@ const state = reactive({
   currentScreen: null as Screen | null,
   resizeHandle: null as string | null,
 })
+
+const totalSelections = computed(() =>
+  screens.value.reduce((count, screen) => count + screen.selections.length, 0),
+)
 
 onMounted(() => {
   document.addEventListener('mousemove', handleMouseMove)
@@ -289,18 +319,13 @@ const startAction = (e: MouseEvent) => {
   if (target.classList.contains('resize-handle')) return
   if (target.classList.contains('selection-box')) return
 
-  const totalSelections = screens.value.reduce(
-    (count, screen) => count + screen.selections.length,
-    0,
-  )
-
   if (screen.addingRectangle && target.classList.contains('target-image')) {
     const rect = target.getBoundingClientRect()
     state.isDragging = true
     state.startX = e.clientX - rect.left
     state.startY = e.clientY - rect.top
     state.currentBox = {
-      number: totalSelections + 1,
+      number: totalSelections.value + 1,
       x: state.startX,
       y: state.startY,
       width: 0,
