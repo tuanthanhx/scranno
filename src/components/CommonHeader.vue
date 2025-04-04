@@ -45,8 +45,6 @@ import LogoIcon from '@/components/icons/IconLogo.vue'
 
 const route = useRoute()
 const { navigateTo } = useNavigation()
-
-console.log(route);
 </script>
 
 <style scoped></style>

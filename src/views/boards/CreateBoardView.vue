@@ -5,7 +5,21 @@
         class="fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
         <div v-for="(screen, index) in screens" :key="index" :data-index="index">
-          <h2 class="font-bold mb-5 text-center bg-blue-200 p-2">Screen {{ index + 1 }}</h2>
+          <div class="group relative font-bold mb-5 text-center bg-blue-200 p-4 leading-5">
+            <div>{{ screen.title || 'SCREEN ' + (index + 1) }}</div>
+            <div
+              class="absolute bg-white p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
+            >
+              <button @click="openEditScreenModal(screen.id)">
+                <PencilSquareIcon
+                  class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                />
+              </button>
+              <button @click="openConfirmDeleteScreenModal(screen.id)">
+                <TrashIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+              </button>
+            </div>
+          </div>
           <div class="px-4">
             <ul class="space-y-4">
               <li v-for="(selection, sIndex) in screen.selections" :key="sIndex" class="flex">
@@ -14,15 +28,19 @@
                 >
                   {{ selection.number }}
                 </div>
-                <div class="flex-1 overflow-hidden">
+                <div class="flex-1 group overflow-hidden">
                   <div class="whitespace-pre-wrap">{{ selection.msg }}</div>
-                  <div class="mt-2">
-                    <div class="flex justify-end space-x-4">
-                      <button @click="openEditModal(screen.id, selection.id)">
-                        <PencilSquareIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                  <div class="mt-2 opacity-0 group-hover:opacity-100">
+                    <div class="flex justify-end space-x-3">
+                      <button @click="openEditNoteModal(screen.id, selection.id)">
+                        <PencilSquareIcon
+                          class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                        />
                       </button>
                       <button @click="openConfirmDeleteNoteModal(screen.id, selection.id)">
-                        <TrashIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                        <TrashIcon
+                          class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                        />
                       </button>
                     </div>
                   </div>
@@ -63,6 +81,21 @@
             :data-index="index"
           >
             <div class="controls overflow-hidden" :class="{ 'is-adding': screen.addingRectangle }">
+              <div class="group relative font-bold mb-5 text-center bg-blue-200 p-4 leading-5">
+                <div>{{ screen.title || 'SCREEN ' + (index + 1) }}</div>
+                <div
+                  class="absolute bg-white p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
+                >
+                  <button @click="openEditScreenModal(screen.id)">
+                    <PencilSquareIcon
+                      class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                    />
+                  </button>
+                  <button @click="openConfirmDeleteScreenModal(screen.id)">
+                    <TrashIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
+                  </button>
+                </div>
+              </div>
               <button
                 @click="screen.addingRectangle = true"
                 class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
@@ -146,11 +179,17 @@
       </div>
     </main>
 
+    <EditScreenModal
+      :is-open="modalEditScreenOpen"
+      :initial-text="currentTitle"
+      @update="updateScreen"
+      @close="modalEditScreenOpen = false"
+    />
     <EditNoteModal
-      :is-open="modalEditOpen"
+      :is-open="modalEditNoteOpen"
       :initial-text="currentMsg"
       @update="updateNote"
-      @close="modalEditOpen = false"
+      @close="modalEditNoteOpen = false"
     />
     <ConfirmDeleteNoteModal
       :is-open="modalDeleteNoteOpen"
@@ -164,6 +203,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import IconList from '@/components/IconList.vue'
+import EditScreenModal from '@/components/EditScreenModal.vue'
 import EditNoteModal from '@/components/EditNoteModal.vue'
 import ConfirmDeleteNoteModal from '@/components/ConfirmDeleteNoteModal.vue'
 import { PencilSquareIcon } from '@heroicons/vue/24/solid'
@@ -181,6 +221,7 @@ interface Selection {
 
 interface Screen {
   id: string
+  title: string
   index: number
   imageUrl: string
   width: number
@@ -558,7 +599,7 @@ const endSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return
   state.isDragging = false
   state.currentScreen.addingRectangle = false
-  openEditModal(state.currentScreen.id, state.currentBox.id)
+  openEditNoteModal(state.currentScreen.id, state.currentBox.id)
   state.currentBox = null
   state.currentScreen = null
 }
@@ -576,14 +617,49 @@ const endMove = () => {
   state.currentScreen = null
 }
 
-// Modal Edit States
+// Modal Edit Screen States
 
-const modalEditOpen = ref(false)
+const modalEditScreenOpen = ref(false)
+const currentTitle = ref('')
+
+const openEditScreenModal = (screenId: string) => {
+  const screen = screens.value.find((s) => s.id === screenId)
+  if (screen) {
+    currentScreenId.value = screenId
+    currentTitle.value = screen.title || ''
+    modalEditScreenOpen.value = true
+  }
+}
+
+const updateScreen = (newTitle: string) => {
+  const screen = screens.value.find((s) => s.id === currentScreenId.value)
+  if (screen) {
+    screen.title = newTitle
+  }
+  modalEditScreenOpen.value = false
+}
+
+// Modal Delete Screen States
+
+// const modalDeleteNoteOpen = ref(false)
+// const deleteScreenId = ref('')
+// const deleteSelectionId = ref('')
+
+const openConfirmDeleteScreenModal = (screenId: string) => {
+  // deleteScreenId.value = screenId
+  // deleteSelectionId.value = selectionId
+  // modalDeleteNoteOpen.value = true
+  console.log('OKOKOK')
+}
+
+// Modal Edit Note States
+
+const modalEditNoteOpen = ref(false)
 const currentScreenId = ref('')
 const currentSelectionId = ref('')
 const currentMsg = ref('')
 
-const openEditModal = (screenId: string, selectionId: string) => {
+const openEditNoteModal = (screenId: string, selectionId: string) => {
   const screen = screens.value.find((s) => s.id === screenId)
   if (screen) {
     const selection = screen.selections.find((sel) => sel.id === selectionId)
@@ -591,7 +667,7 @@ const openEditModal = (screenId: string, selectionId: string) => {
       currentScreenId.value = screenId
       currentSelectionId.value = selectionId
       currentMsg.value = selection.msg || ''
-      modalEditOpen.value = true
+      modalEditNoteOpen.value = true
     }
   }
 }
@@ -604,7 +680,7 @@ const updateNote = (newText: string) => {
       selection.msg = newText
     }
   }
-  modalEditOpen.value = false
+  modalEditNoteOpen.value = false
 }
 
 // Modal Delete States
