@@ -576,7 +576,8 @@ const endMove = () => {
   state.currentScreen = null
 }
 
-// Modal states
+// Modal Edit States
+
 const modalEditOpen = ref(false)
 const currentScreenId = ref('')
 const currentSelectionId = ref('')
@@ -590,11 +591,23 @@ const openEditModal = (screenId: string, selectionId: string) => {
       currentScreenId.value = screenId
       currentSelectionId.value = selectionId
       currentMsg.value = selection.msg || ''
-      console.log(currentMsg.value)
       modalEditOpen.value = true
     }
   }
 }
+
+const updateNote = (newText: string) => {
+  const screen = screens.value.find((s) => s.id === currentScreenId.value)
+  if (screen) {
+    const selection = screen.selections.find((sel) => sel.id === currentSelectionId.value)
+    if (selection) {
+      selection.msg = newText
+    }
+  }
+  modalEditOpen.value = false
+}
+
+// Modal Delete States
 
 const modalDeleteNoteOpen = ref(false)
 const deleteScreenId = ref('')
@@ -617,16 +630,7 @@ const deleteNote = () => {
   modalDeleteNoteOpen.value = false
 }
 
-const updateNote = (newText: string) => {
-  const screen = screens.value.find((s) => s.id === currentScreenId.value)
-  if (screen) {
-    const selection = screen.selections.find((sel) => sel.id === currentSelectionId.value)
-    if (selection) {
-      selection.msg = newText
-    }
-  }
-  modalEditOpen.value = false
-}
+// Feature : Export
 
 const exportAll = () => {
   const exportData = screens.value.map((screen) => ({
