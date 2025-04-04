@@ -220,6 +220,7 @@ const handleDrop = (event: DragEvent) => {
 }
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024 // 4.5MB
+const MAX_FILE_WIDTH = 1200
 
 const processFile = async (file: File) => {
   if (!file) return
@@ -250,9 +251,15 @@ const processFile = async (file: File) => {
   }
 
   try {
-    const { width, height } = await getImageDimensions(file)
     const imageUrl = URL.createObjectURL(file)
-    const screen = createScreen(imageUrl, width, height)
+    const { width, height } = await getImageDimensions(file)
+    let newWidth = width
+    let newHeight = height
+    if (width > MAX_FILE_WIDTH) {
+      newWidth = MAX_FILE_WIDTH
+      newHeight = Math.round((MAX_FILE_WIDTH / width) * height)
+    }
+    const screen = createScreen(imageUrl, newWidth, newHeight)
     screens.value.push(screen)
     imageInput.value.value = ''
   } catch (error) {
