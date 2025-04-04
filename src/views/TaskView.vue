@@ -16,6 +16,11 @@
                 </div>
                 <div class="flex-1 overflow-hidden">
                   <div>{{ selection.msg }}</div>
+                  <div class="mt-2">
+                    <div class="flex justify-end">
+                      <a href="#edit" @click="editNote(screen.id, selection.id)">Edit</a>
+                    </div>
+                  </div>
                   <div class="mt-2 hidden">
                     <IconList />
                   </div>
@@ -29,13 +34,7 @@
     <main class="w-full">
       <div class="mx-auto w-full max-w-[1200px]">
         <div class="controls py-5 hidden">
-          <input
-            ref="imageInput"
-            type="file"
-            accept="image/*"
-            class="hidden"
-            @change="handleImageUpload"
-          />
+          <!-- <input ref="imageInput" type="file" accept="image/*" @change="handleImageUpload" /> -->
           <input type="file" id="importInput" accept=".json" />
           <button
             :disabled="screens.length === 0"
@@ -104,9 +103,30 @@
           </div>
         </div>
         <div class="footer-controls py-5">
-          <button @click="triggerImageInput" class="px-4 py-2 bg-blue-500 text-white rounded">
+          <div class="controls py-5">
+            <div
+              ref="dropZone"
+              class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer"
+              @dragover.prevent="isDragging = true"
+              @dragleave.prevent="isDragging = false"
+              @drop.prevent="handleDrop"
+              @click="triggerFileInput"
+              :class="{ 'bg-gray-100': isDragging }"
+            >
+              <input
+                ref="imageInput"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleImageUpload"
+              />
+              <p class="text-gray-600">Drag and drop an image here or click to select</p>
+              <p class="text-sm text-gray-500 mt-2">(Only image files are accepted)</p>
+            </div>
+          </div>
+          <!-- <button @click="triggerImageInput" class="px-4 py-2 bg-blue-500 text-white rounded">
             Add Screen
-          </button>
+          </button> -->
         </div>
       </div>
     </main>
@@ -115,9 +135,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { v4 as uuidv4 } from 'uuid'
 import IconList from '@/components/IconList.vue'
 
 interface Selection {
+  id: string
   number: number
   x: number
   y: number
@@ -127,6 +149,7 @@ interface Selection {
 }
 
 interface Screen {
+  id: string
   index: number
   imageUrl: string
   width: number
@@ -140,6 +163,9 @@ const screens = ref<Screen[]>([])
 const screensContainer = ref<HTMLElement | null>(null)
 
 const imageInput = ref<HTMLInputElement | null>(null)
+const dropZone = ref<HTMLElement | null>(null)
+const isDragging = ref(false)
+
 const imageRefs = ref<HTMLImageElement[]>([])
 // const importInput = ref<HTMLInputElement | null>(null)
 
@@ -168,7 +194,72 @@ onUnmounted(() => {
   document.removeEventListener('mouseup', endAction)
 })
 
-const triggerImageInput = () => imageInput.value?.click()
+const triggerFileInput = () => {
+  imageInput.value?.click()
+}
+
+const handleImageUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (files && files.length > 0) {
+    processFile(files[0])
+  }
+}
+
+const handleDrop = (event: DragEvent) => {
+  isDragging.value = false
+  const files = event.dataTransfer?.files
+  if (files && files.length > 0) {
+    // Check if the dropped file is an image
+    if (files[0].type.startsWith('image/')) {
+      processFile(files[0])
+    } else {
+      console.error('Please drop an image file')
+    }
+  }
+}
+
+const MAX_FILE_SIZE = 4.5 * 1024 * 1024 // 4.5MB
+
+const processFile = async (file: File) => {
+  if (!file) return
+
+  if (file.size > MAX_FILE_SIZE) {
+    alert('File size must be under 4.5MB')
+    return
+  }
+
+  const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const imageUrl = URL.createObjectURL(file)
+      img.onload = () => {
+        const dimensions = {
+          width: img.width,
+          height: img.height,
+        }
+        URL.revokeObjectURL(imageUrl)
+        resolve(dimensions)
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(imageUrl)
+        reject(new Error('Failed to load image'))
+      }
+      img.src = imageUrl
+    })
+  }
+
+  try {
+    const { width, height } = await getImageDimensions(file)
+    const imageUrl = URL.createObjectURL(file)
+    const screen = createScreen(imageUrl, width, height)
+    screens.value.push(screen)
+    imageInput.value.value = ''
+  } catch (error) {
+    console.error('Error processing image:', error)
+    alert('Failed to process the image')
+  }
+}
 
 // const handleImageUpload = (e: Event) => {
 //   const target = e.target as HTMLInputElement
@@ -186,8 +277,6 @@ const triggerImageInput = () => imageInput.value?.click()
 //     // reader.readAsDataURL(file)
 //   }
 // }
-
-const MAX_FILE_SIZE = 4.5 * 1024 * 1024 // 4.5MB
 
 // const handleImageUpload = async (e: Event) => {
 //   const target = e.target as HTMLInputElement
@@ -231,50 +320,8 @@ const MAX_FILE_SIZE = 4.5 * 1024 * 1024 // 4.5MB
 //   }
 // }
 
-const handleImageUpload = async (e: Event) => {
-  const target = e.target as HTMLInputElement
-  const file = target.files?.[0]
-
-  if (!file) return
-
-  if (file.size > MAX_FILE_SIZE) {
-    alert('File size must be under 4.5MB')
-    return
-  }
-
-  const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      const imageUrl = URL.createObjectURL(file)
-      img.onload = () => {
-        const dimensions = {
-          width: img.width,
-          height: img.height,
-        }
-        URL.revokeObjectURL(imageUrl)
-        resolve(dimensions)
-      }
-      img.onerror = () => {
-        URL.revokeObjectURL(imageUrl)
-        reject(new Error('Failed to load image'))
-      }
-      img.src = imageUrl
-    })
-  }
-
-  try {
-    const { width, height } = await getImageDimensions(file)
-    const imageUrl = URL.createObjectURL(file)
-    const screen = createScreen(imageUrl, width, height)
-    screens.value.push(screen)
-    target.value = ''
-  } catch (error) {
-    console.error('Error processing image:', error)
-    alert('Failed to process the image')
-  }
-}
-
 const createScreen = (imageUrl: string, width: number, height: number): Screen => ({
+  id: uuidv4(),
   index: screens.value.length,
   imageUrl,
   width,
@@ -326,6 +373,7 @@ const startAction = (e: MouseEvent) => {
     state.startX = e.clientX - rect.left
     state.startY = e.clientY - rect.top
     state.currentBox = {
+      id: uuidv4(),
       number: totalSelections.value + 1,
       x: state.startX,
       y: state.startY,
@@ -449,8 +497,8 @@ const endSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return
   state.isDragging = false
   state.currentScreen.addingRectangle = false
-  const text = prompt('Enter text for this selection:')
-  if (text) state.currentBox.msg = text
+  // const text = prompt('Enter text for this selection:')
+  // if (text) state.currentBox.msg = text
   state.currentBox = null
   state.currentScreen = null
 }
@@ -468,14 +516,23 @@ const endMove = () => {
   state.currentScreen = null
 }
 
+const editNote = (screenId, selectionId) => {
+  console.log(screenId, selectionId)
+  const text = prompt('Enter text for this selection:')
+  // if (text) state.currentBox.msg = text
+  if (text) console.log(text)
+}
+
 const exportAll = () => {
   const exportData = screens.value.map((screen) => ({
     index: screen.index,
+    id: screen.id,
     imageUrl: screen.imageUrl,
     status: screen.status,
     width: screen.width,
     height: screen.height,
     notes: screen.selections.map((s) => ({
+      id: s.id,
       number: s.number,
       x: Math.round(s.x),
       y: Math.round(s.y),
@@ -497,7 +554,6 @@ const exportAll = () => {
 </script>
 
 <style scoped>
-
 .controls.is-adding .target-image {
   cursor: crosshair;
 }
@@ -509,5 +565,4 @@ const exportAll = () => {
   opacity: 0.5;
   pointer-events: none;
 }
-
 </style>
