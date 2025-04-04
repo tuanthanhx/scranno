@@ -287,7 +287,9 @@ const processFile = async (file: File) => {
     }
     const screen = createScreen(imageUrl, newWidth, newHeight)
     screens.value.push(screen)
-    imageInput.value.value = ''
+    if (imageInput.value) {
+      imageInput.value.value = ''
+    }
   } catch (error) {
     console.error('Error processing image:', error)
     alert('Failed to process the image')
@@ -549,7 +551,7 @@ const endMove = () => {
   state.currentScreen = null
 }
 
-const editNote = (screenId, selectionId) => {
+const editNote = (screenId: string, selectionId: string) => {
   console.log(screenId, selectionId)
   const text = prompt('Enter text for this selection:')
   // if (text) state.currentBox.msg = text
