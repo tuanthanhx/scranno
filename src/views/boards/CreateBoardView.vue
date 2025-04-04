@@ -18,17 +18,11 @@
                   <div class="whitespace-pre-wrap">{{ selection.msg }}</div>
                   <div class="mt-2">
                     <div class="flex justify-end space-x-4">
-                      <button
-                        class="text-gray-500 cursor-pointer hover:underline"
-                        @click="openEditModal(screen.id, selection.id)"
-                      >
-                        Edit
+                      <button @click="openEditModal(screen.id, selection.id)">
+                        <PencilSquareIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
                       </button>
-                      <button
-                        class="text-gray-500 cursor-pointer hover:underline"
-                        @click="openConfirmDeleteNoteModal(screen.id, selection.id)"
-                      >
-                        Delete
+                      <button @click="openConfirmDeleteNoteModal(screen.id, selection.id)">
+                        <TrashIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
                       </button>
                     </div>
                   </div>
@@ -172,6 +166,8 @@ import { v4 as uuidv4 } from 'uuid'
 import IconList from '@/components/IconList.vue'
 import EditNoteModal from '@/components/EditNoteModal.vue'
 import ConfirmDeleteNoteModal from '@/components/ConfirmDeleteNoteModal.vue'
+import { PencilSquareIcon } from '@heroicons/vue/24/solid'
+import { TrashIcon } from '@heroicons/vue/24/solid'
 
 interface Selection {
   id: string
@@ -594,6 +590,7 @@ const openEditModal = (screenId: string, selectionId: string) => {
       currentScreenId.value = screenId
       currentSelectionId.value = selectionId
       currentMsg.value = selection.msg || ''
+      console.log(currentMsg.value)
       modalEditOpen.value = true
     }
   }

@@ -42,21 +42,30 @@ const emit = defineEmits<{
 const localText = ref('')
 
 watch(
+  () => props.isOpen,
+  (newVal) => {
+    if (newVal) {
+      localText.value = props.initialText || ''
+    }
+  },
+)
+
+watch(
   () => props.initialText,
   (newText) => {
-    localText.value = newText || ''
+    if (props.isOpen) {
+      localText.value = newText || ''
+    }
   },
-  { immediate: true }
 )
 
 const save = () => {
   emit('update', localText.value)
   emit('close')
-  localText.value = '';
 }
 
 const close = () => {
+  localText.value = ''
   emit('close')
-  localText.value = '';
 }
 </script>
