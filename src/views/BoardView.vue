@@ -31,7 +31,7 @@
         </div>
       </div>
     </aside>
-    <main class="w-full">
+    <main class="w-full pt-[60px]">
       <div class="mx-auto w-full max-w-[1200px]">
         <div class="controls py-5 hidden">
           <!-- <input ref="imageInput" type="file" accept="image/*" @change="handleImageUpload" /> -->
@@ -130,7 +130,7 @@
                 >
                   Select Image
                 </button>
-                <p class="text-sm text-gray-500 mt-2">(Only image files are accepted)</p>
+                <p class="text-sm text-gray-500">(Only image files are accepted)</p>
               </div>
             </div>
           </div>
@@ -530,8 +530,8 @@ const endSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return
   state.isDragging = false
   state.currentScreen.addingRectangle = false
-  // const text = prompt('Enter text for this selection:')
-  // if (text) state.currentBox.msg = text
+  const text = prompt('Enter text for this selection:')
+  if (text) state.currentBox.msg = text
   state.currentBox = null
   state.currentScreen = null
 }
