@@ -62,7 +62,7 @@
                 @click="screen.addingRectangle = true"
                 class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
               >
-                [Add Note]
+                Add Note
               </button>
               <div class="relative select-none">
                 <img
@@ -70,7 +70,7 @@
                   :src="screen.imageUrl"
                   :width="screen.width"
                   :height="screen.height"
-                  class="target-image"
+                  class="target-image shadow-md"
                 />
                 <div
                   v-for="(selection, sIndex) in screen.selections"
@@ -126,7 +126,7 @@
                 </p>
                 <button
                   @click.stop="triggerFileInput"
-                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors"
                 >
                   Select Image
                 </button>
