@@ -15,10 +15,11 @@
                   {{ selection.number }}
                 </div>
                 <div class="flex-1 overflow-hidden">
-                  <div>{{ selection.msg }}</div>
+                  <div class="whitespace-pre-wrap">{{ selection.msg }}</div>
                   <div class="mt-2">
-                    <div class="flex justify-end">
-                      <a href="#edit" @click="editNote(screen.id, selection.id)">Edit</a>
+                    <div class="flex justify-end space-x-4">
+                      <button class="cursor-pointer hover:underline" @click="openEditModal(screen.id, selection.id)">Edit</button>
+                      <button class="cursor-pointer hover:underline" @click="openConfirmDeleteNoteModal(screen.id, selection.id)">Delete</button>
                     </div>
                   </div>
                   <div class="mt-2 hidden">
@@ -70,7 +71,7 @@
                   :src="screen.imageUrl"
                   :width="screen.width"
                   :height="screen.height"
-                  class="target-image shadow-md"
+                  class="target-image bg-white shadow-md"
                 />
                 <div
                   v-for="(selection, sIndex) in screen.selections"
@@ -140,6 +141,18 @@
         </div>
       </div>
     </main>
+
+    <EditNoteModal
+      :is-open="modalEditOpen"
+      :initial-text="currentMsg"
+      @update="updateNote"
+      @close="modalEditOpen = false"
+    />
+    <ConfirmDeleteNoteModal
+      :is-open="modalDeleteNoteOpen"
+      @confirm="deleteNote"
+      @close="modalDeleteNoteOpen = false"
+    />
   </div>
 </template>
 
@@ -147,6 +160,8 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import IconList from '@/components/IconList.vue'
+import EditNoteModal from '@/components/EditNoteModal.vue'
+import ConfirmDeleteNoteModal from '@/components/ConfirmDeleteNoteModal.vue'
 
 interface Selection {
   id: string
@@ -220,7 +235,6 @@ const handleDrop = (event: DragEvent) => {
   isDragging.value = false
   const files = event.dataTransfer?.files
   if (files && files.length > 0) {
-    // Check if the dropped file is an image
     if (files[0].type.startsWith('image/')) {
       processFile(files[0])
     } else {
@@ -532,8 +546,7 @@ const endSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return
   state.isDragging = false
   state.currentScreen.addingRectangle = false
-  const text = prompt('Enter text for this selection:')
-  if (text) state.currentBox.msg = text
+  openEditModal(state.currentScreen.id, state.currentBox.id)
   state.currentBox = null
   state.currentScreen = null
 }
@@ -551,11 +564,55 @@ const endMove = () => {
   state.currentScreen = null
 }
 
-const editNote = (screenId: string, selectionId: string) => {
-  console.log(screenId, selectionId)
-  const text = prompt('Enter text for this selection:')
-  // if (text) state.currentBox.msg = text
-  if (text) console.log(text)
+// Modal states
+const modalEditOpen = ref(false)
+const currentScreenId = ref('')
+const currentSelectionId = ref('')
+const currentMsg = ref('')
+
+const openEditModal = (screenId: string, selectionId: string) => {
+  const screen = screens.value.find(s => s.id === screenId)
+  if (screen) {
+    const selection = screen.selections.find(sel => sel.id === selectionId)
+    if (selection) {
+      currentScreenId.value = screenId
+      currentSelectionId.value = selectionId
+      currentMsg.value = selection.msg || ''
+      modalEditOpen.value = true
+    }
+  }
+}
+
+const modalDeleteNoteOpen = ref(false)
+const deleteScreenId = ref('')
+const deleteSelectionId = ref('')
+
+const openConfirmDeleteNoteModal = (screenId: string, selectionId: string) => {
+  deleteScreenId.value = screenId
+  deleteSelectionId.value = selectionId
+  modalDeleteNoteOpen.value = true
+}
+
+const deleteNote = () => {
+  const screen = screens.value.find(s => s.id === deleteScreenId.value)
+  if (screen) {
+    const selectionIndex = screen.selections.findIndex(sel => sel.id === deleteSelectionId.value)
+    if (selectionIndex !== -1) {
+      screen.selections.splice(selectionIndex, 1)
+    }
+  }
+  modalDeleteNoteOpen.value = false
+}
+
+const updateNote = (newText: string) => {
+  const screen = screens.value.find(s => s.id === currentScreenId.value)
+  if (screen) {
+    const selection = screen.selections.find(sel => sel.id === currentSelectionId.value)
+    if (selection) {
+      selection.msg = newText
+    }
+  }
+  modalEditOpen.value = false
 }
 
 const exportAll = () => {
