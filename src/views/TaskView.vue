@@ -1,8 +1,8 @@
 <template>
   <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
-    <aside class="flex-[300px_0_0] bg-orange-500">
+    <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
-        class="fixed top-0 left-0 w-[300px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
+        class="fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
         <div v-for="(screen, index) in screens" :key="index" :data-index="index">
           <h2 class="font-bold mb-5 text-center bg-blue-200 p-2">Screen {{ index + 1 }}</h2>
@@ -106,11 +106,11 @@
           <div class="controls py-5">
             <div
               ref="dropZone"
-              class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer"
+              class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
               @dragover.prevent="isDragging = true"
               @dragleave.prevent="isDragging = false"
               @drop.prevent="handleDrop"
-              @click="triggerFileInput"
+              @paste="handlePaste"
               :class="{ 'bg-gray-100': isDragging }"
             >
               <input
@@ -120,8 +120,18 @@
                 class="hidden"
                 @change="handleImageUpload"
               />
-              <p class="text-gray-600">Drag and drop an image here or click to select</p>
-              <p class="text-sm text-gray-500 mt-2">(Only image files are accepted)</p>
+              <div class="space-y-4">
+                <p class="text-gray-600">
+                  Drag and drop, paste, or use the button to select an image
+                </p>
+                <button
+                  @click.stop="triggerFileInput"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                >
+                  Select Image
+                </button>
+                <p class="text-sm text-gray-500 mt-2">(Only image files are accepted)</p>
+              </div>
             </div>
           </div>
           <!-- <button @click="triggerImageInput" class="px-4 py-2 bg-blue-500 text-white rounded">
@@ -215,6 +225,22 @@ const handleDrop = (event: DragEvent) => {
       processFile(files[0])
     } else {
       console.error('Please drop an image file')
+    }
+  }
+}
+
+const handlePaste = (event: ClipboardEvent) => {
+  const items = event.clipboardData?.items
+  if (items) {
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          processFile(file)
+          document.body.focus()
+          break
+        }
+      }
     }
   }
 }
