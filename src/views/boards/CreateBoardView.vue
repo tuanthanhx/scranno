@@ -18,8 +18,18 @@
                   <div class="whitespace-pre-wrap">{{ selection.msg }}</div>
                   <div class="mt-2">
                     <div class="flex justify-end space-x-4">
-                      <button class="cursor-pointer hover:underline" @click="openEditModal(screen.id, selection.id)">Edit</button>
-                      <button class="cursor-pointer hover:underline" @click="openConfirmDeleteNoteModal(screen.id, selection.id)">Delete</button>
+                      <button
+                        class="text-gray-500 cursor-pointer hover:underline"
+                        @click="openEditModal(screen.id, selection.id)"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        class="text-gray-500 cursor-pointer hover:underline"
+                        @click="openConfirmDeleteNoteModal(screen.id, selection.id)"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                   <div class="mt-2 hidden">
@@ -58,7 +68,7 @@
             class="screen-container"
             :data-index="index"
           >
-            <div class="controls" :class="{ 'is-adding': screen.addingRectangle }">
+            <div class="controls overflow-hidden" :class="{ 'is-adding': screen.addingRectangle }">
               <button
                 @click="screen.addingRectangle = true"
                 class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
@@ -205,9 +215,15 @@ const state = reactive({
   resizeHandle: null as string | null,
 })
 
-const totalSelections = computed(() =>
-  screens.value.reduce((count, screen) => count + screen.selections.length, 0),
-)
+const highestSelectionNumber = computed(() => {
+  if (screens.value.length === 0) return 0
+
+  const allNumbers = screens.value
+    .flatMap((screen) => screen.selections)
+    .map((selection) => selection.number)
+
+  return allNumbers.length > 0 ? Math.max(...allNumbers) : 0
+})
 
 onMounted(() => {
   document.addEventListener('mousemove', handleMouseMove)
@@ -423,7 +439,7 @@ const startAction = (e: MouseEvent) => {
     state.startY = e.clientY - rect.top
     state.currentBox = {
       id: uuidv4(),
-      number: totalSelections.value + 1,
+      number: highestSelectionNumber.value + 1,
       x: state.startX,
       y: state.startY,
       width: 0,
@@ -571,9 +587,9 @@ const currentSelectionId = ref('')
 const currentMsg = ref('')
 
 const openEditModal = (screenId: string, selectionId: string) => {
-  const screen = screens.value.find(s => s.id === screenId)
+  const screen = screens.value.find((s) => s.id === screenId)
   if (screen) {
-    const selection = screen.selections.find(sel => sel.id === selectionId)
+    const selection = screen.selections.find((sel) => sel.id === selectionId)
     if (selection) {
       currentScreenId.value = screenId
       currentSelectionId.value = selectionId
@@ -594,9 +610,9 @@ const openConfirmDeleteNoteModal = (screenId: string, selectionId: string) => {
 }
 
 const deleteNote = () => {
-  const screen = screens.value.find(s => s.id === deleteScreenId.value)
+  const screen = screens.value.find((s) => s.id === deleteScreenId.value)
   if (screen) {
-    const selectionIndex = screen.selections.findIndex(sel => sel.id === deleteSelectionId.value)
+    const selectionIndex = screen.selections.findIndex((sel) => sel.id === deleteSelectionId.value)
     if (selectionIndex !== -1) {
       screen.selections.splice(selectionIndex, 1)
     }
@@ -605,9 +621,9 @@ const deleteNote = () => {
 }
 
 const updateNote = (newText: string) => {
-  const screen = screens.value.find(s => s.id === currentScreenId.value)
+  const screen = screens.value.find((s) => s.id === currentScreenId.value)
   if (screen) {
-    const selection = screen.selections.find(sel => sel.id === currentSelectionId.value)
+    const selection = screen.selections.find((sel) => sel.id === currentSelectionId.value)
     if (selection) {
       selection.msg = newText
     }
@@ -650,8 +666,8 @@ const exportAll = () => {
   cursor: crosshair;
 }
 .controls.is-adding .button-add-note {
-  opacity: 0;
-  visibility: hidden;
+  opacity: 0.5;
+  pointer-events: none;
 }
 .controls.is-adding .selection-box {
   opacity: 0.5;

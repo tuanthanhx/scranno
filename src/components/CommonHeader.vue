@@ -10,7 +10,7 @@
       <template v-if="route.name === 'CreateBoard'">
         <button
           class="text-gray-600 hover:text-gray-800 font-medium cursor-pointer"
-          @click="navigateTo('/boards')"
+          @click="navigateTo('/')"
         >
           Discard
         </button>
