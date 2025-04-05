@@ -56,17 +56,6 @@
     </aside>
     <main class="w-full pt-[60px]">
       <div class="mx-auto w-full max-w-[1200px]">
-        <div class="controls py-5 hidden">
-          <!-- <input ref="imageInput" type="file" accept="image/*" @change="handleImageUpload" /> -->
-          <input type="file" id="importInput" accept=".json" />
-          <button
-            :disabled="screens.length === 0"
-            @click="exportAll"
-            class="px-4 py-2 bg-green-500 text-white rounded cursor-pointer"
-          >
-            Export All
-          </button>
-        </div>
         <div
           id="screens"
           class="space-y-10 py-5"
@@ -81,7 +70,7 @@
             :data-index="index"
           >
             <div class="controls overflow-hidden" :class="{ 'is-adding': screen.addingRectangle }">
-              <div class="group relative font-bold mb-5 text-center bg-blue-200 p-4 leading-5">
+              <!-- <div class="group relative font-bold mb-5 text-center bg-blue-200 p-4 leading-5">
                 <div>{{ screen.title || 'Untitled' }}</div>
                 <div
                   class="absolute bg-white p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
@@ -95,7 +84,7 @@
                     <TrashIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
                   </button>
                 </div>
-              </div>
+              </div> -->
               <button
                 @click="screen.addingRectangle = true"
                 class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
@@ -194,7 +183,7 @@
     <ConfirmationModal
       :is-open="modalState.showDeleteScreenModal"
       title="Confirm Deletion"
-      message="Are you sure you want to delete this screen? This action cannot be undone."
+      message="Are you sure you want to delete this screen?\nAll notes inside will also be deleted.\nThis action cannot be undone."
       confirm-text="Delete"
       cancel-text="Cancel"
       @confirm="handleDeleteScreen"
@@ -203,7 +192,7 @@
     <ConfirmationModal
       :is-open="modalState.showDeleteNoteModal"
       title="Confirm Deletion"
-      message="Are you sure you want to delete this note? This action cannot be undone."
+      message="Are you sure you want to delete this note?\nThis action cannot be undone."
       confirm-text="Delete"
       cancel-text="Cancel"
       @confirm="handleDeleteNote"
@@ -376,65 +365,6 @@ const processFile = async (file: File) => {
     alert('Failed to process the image')
   }
 }
-
-// const handleImageUpload = (e: Event) => {
-//   const target = e.target as HTMLInputElement
-//   const file = target.files?.[0]
-//   if (file) {
-//     const screen = createScreen(file.name)
-//     screens.value.push(screen)
-//     target.value = ''
-//     // const reader = new FileReader()
-//     // reader.onload = (event) => {
-//     //   const screen = createScreen(file.name, event.target?.result as string)
-//     //   screens.value.push(screen)
-//     //   target.value = ''
-//     // }
-//     // reader.readAsDataURL(file)
-//   }
-// }
-
-// const handleImageUpload = async (e: Event) => {
-//   const target = e.target as HTMLInputElement
-//   const file = target.files?.[0]
-
-//   if (!file) return
-
-//   if (file.size > MAX_FILE_SIZE) {
-//     alert('File size must be under 1MB')
-//     return
-//   }
-
-//   try {
-//     const formData = new FormData()
-//     formData.append('file', file)
-//     const response = await fetch('/api/upload', {
-//       method: 'POST',
-//       body: formData,
-//     })
-
-//     if (!response.ok) {
-//       throw new Error('Upload failed')
-//     }
-
-//     const { url, width, height } = await response.json()
-
-//     if (!url) {
-//       alert('Cannot upload file')
-//       return
-//     }
-
-//     // Create a screen object with uploaded file URL
-//     const screen = createScreen(file.name, url, width, height)
-//     screens.value.push(screen)
-
-//     // Reset the file input correctly
-//     target.value = ''
-//   } catch (error) {
-//     console.error('Error uploading file:', error)
-//     alert('Failed to upload file')
-//   }
-// }
 
 const createScreen = (imageUrl: string, width: number, height: number): Screen => ({
   id: uuidv4(),
@@ -622,14 +552,14 @@ const endSelection = (e: MouseEvent) => {
 const endResize = () => {
   state.isResizing = false
   state.resizeHandle = null
-  state.currentBox = null
   state.currentScreen = null
+  state.currentBox = null
 }
 
 const endMove = () => {
   state.isMoving = false
-  state.currentBox = null
   state.currentScreen = null
+  state.currentBox = null
 }
 
 // MODALS
