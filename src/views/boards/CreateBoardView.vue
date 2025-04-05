@@ -5,10 +5,12 @@
         class="fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
         <div v-for="(screen, index) in screens" :key="index" :data-index="index">
-          <div class="group relative font-bold mb-5 text-center bg-blue-200 p-4 leading-5">
-            <div>{{ screen.title || 'Untitled' }}</div>
+          <div class="group relative font-bold mb-5 text-center bg-orange-200 leading-5">
+            <div class="p-4 cursor-pointer" @click="scrollToElement(screen.id)">
+              {{ screen.title || 'Untitled' }}
+            </div>
             <div
-              class="absolute bg-white p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
+              class="absolute bg-white/50 p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
             >
               <button @click="openEditScreenModal(screen)">
                 <PencilSquareIcon
@@ -24,12 +26,15 @@
             <ul class="space-y-4">
               <li v-for="(selection, sIndex) in screen.selections" :key="sIndex" class="flex">
                 <div
-                  class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center bg-red-500 rounded-full text-xs font-bold text-white"
+                  class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center bg-red-500 rounded-full text-xs font-bold text-white cursor-pointer"
+                  @click="scrollToElement(selection.id)"
                 >
                   {{ selection.number }}
                 </div>
                 <div class="flex-1 group overflow-hidden">
-                  <div class="whitespace-pre-wrap">{{ selection.msg }}</div>
+                  <div class="whitespace-pre-wrap">
+                    {{ selection.msg }}
+                  </div>
                   <div class="mt-2 opacity-0 group-hover:opacity-100">
                     <div class="flex justify-end space-x-3">
                       <button @click="openEditNoteModal(screen, selection)">
@@ -69,22 +74,11 @@
             class="screen-container"
             :data-index="index"
           >
-            <div class="controls overflow-hidden" :class="{ 'is-adding': screen.addingRectangle }">
-              <!-- <div class="group relative font-bold mb-5 text-center bg-blue-200 p-4 leading-5">
-                <div>{{ screen.title || 'Untitled' }}</div>
-                <div
-                  class="absolute bg-white p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
-                >
-                  <button @click="openEditScreenModal(screen)">
-                    <PencilSquareIcon
-                      class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer"
-                    />
-                  </button>
-                  <button @click="openConfirmDeleteScreenModal(screen)">
-                    <TrashIcon class="w-5 h-5 text-gray-500 hover:text-gray-700 cursor-pointer" />
-                  </button>
-                </div>
-              </div> -->
+            <div
+              class="controls overflow-hidden"
+              :class="{ 'is-adding': screen.addingRectangle }"
+              :data-id="screen.id"
+            >
               <button
                 @click="screen.addingRectangle = true"
                 class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
@@ -104,6 +98,8 @@
                   :key="sIndex"
                   class="selection-box group absolute border-2 border-red-500 hover:border-red-500/50 hover:z-[10000] bg-black/10 cursor-move rounded-md"
                   :style="selectionStyle(selection)"
+                  :data-id="selection.id"
+                  data-type="note"
                   @mousedown.stop="startMove($event, screen, selection)"
                 >
                   <span
@@ -204,11 +200,11 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
+import { scrollToElement } from '@/utils/utils'
 import IconList from '@/components/IconList.vue'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import EditScreenModal from '@/components/EditScreenModal.vue'
 import EditNoteModal from '@/components/EditNoteModal.vue'
-
 import { PencilSquareIcon } from '@heroicons/vue/24/solid'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
@@ -565,12 +561,12 @@ const endMove = () => {
 // MODALS
 
 interface ModalState {
-  showDeleteScreenModal: boolean;
-  showDeleteNoteModal: boolean;
-  showEditScreenModal: boolean;
-  showEditNoteModal: boolean;
-  selectedScreen: Screen | null;
-  selectedNote: Selection | null;
+  showDeleteScreenModal: boolean
+  showDeleteNoteModal: boolean
+  showEditScreenModal: boolean
+  showEditNoteModal: boolean
+  selectedScreen: Screen | null
+  selectedNote: Selection | null
 }
 
 const modalState = reactive<ModalState>({
@@ -585,8 +581,8 @@ const modalState = reactive<ModalState>({
 const closeModals = () => {
   modalState.showDeleteScreenModal = false
   modalState.showDeleteNoteModal = false
-  modalState.showEditScreenModal = false;
-  modalState.showEditNoteModal = false;
+  modalState.showEditScreenModal = false
+  modalState.showEditNoteModal = false
 }
 
 const openConfirmDeleteScreenModal = (screen: Screen) => {
@@ -601,33 +597,37 @@ const openConfirmDeleteNoteModal = (screen: Screen, note: Selection) => {
 }
 
 const openEditScreenModal = (screen: Screen) => {
-  modalState.selectedScreen = screen;
-  modalState.showEditScreenModal = true;
+  modalState.selectedScreen = screen
+  modalState.showEditScreenModal = true
 }
 
 const openEditNoteModal = (screen: Screen, note: Selection) => {
-  modalState.selectedScreen = screen;
-  modalState.selectedNote = note;
-  modalState.showEditNoteModal = true;
+  modalState.selectedScreen = screen
+  modalState.selectedNote = note
+  modalState.showEditNoteModal = true
 }
 
 const handleDeleteScreen = () => {
-  const screenIndex = screens.value.findIndex((screen) => screen.id === modalState.selectedScreen?.id)
+  const screenIndex = screens.value.findIndex(
+    (screen) => screen.id === modalState.selectedScreen?.id,
+  )
   if (screenIndex !== -1) {
     screens.value.splice(screenIndex, 1)
   }
-  closeModals();
+  closeModals()
 }
 
 const handleDeleteNote = () => {
   const screen = screens.value.find((s) => s.id === modalState.selectedScreen?.id)
   if (screen) {
-    const selectionIndex = screen.selections.findIndex((sel) => sel.id === modalState.selectedNote?.id)
+    const selectionIndex = screen.selections.findIndex(
+      (sel) => sel.id === modalState.selectedNote?.id,
+    )
     if (selectionIndex !== -1) {
       screen.selections.splice(selectionIndex, 1)
     }
   }
-  closeModals();
+  closeModals()
 }
 
 const handleEditScreen = (newTitle: string) => {
@@ -635,7 +635,7 @@ const handleEditScreen = (newTitle: string) => {
   if (screen) {
     screen.title = newTitle
   }
-  closeModals();
+  closeModals()
 }
 
 const handleEditNote = (newText: string) => {
@@ -646,39 +646,9 @@ const handleEditNote = (newText: string) => {
       selection.msg = newText
     }
   }
-  closeModals();
+  closeModals()
 }
 
-// Feature : Export
-
-const exportAll = () => {
-  const exportData = screens.value.map((screen) => ({
-    index: screen.index,
-    id: screen.id,
-    imageUrl: screen.imageUrl,
-    status: screen.status,
-    width: screen.width,
-    height: screen.height,
-    notes: screen.selections.map((s) => ({
-      id: s.id,
-      number: s.number,
-      x: Math.round(s.x),
-      y: Math.round(s.y),
-      w: Math.round(s.width),
-      h: Math.round(s.height),
-      msg: s.msg || '',
-    })),
-  }))
-
-  const jsonString = JSON.stringify(exportData, null, 2)
-  const blob = new Blob([jsonString], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'all_screens.json'
-  a.click()
-  URL.revokeObjectURL(url)
-}
 </script>
 
 <style scoped>
