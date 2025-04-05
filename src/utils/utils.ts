@@ -4,7 +4,7 @@ export function scrollToElement(elementId: string) {
     const header = document.querySelector('header') as HTMLElement | null
     const headerHeight = header ? header.offsetHeight : 0
     const targetRect = targetElement.getBoundingClientRect()
-    let scrollPosition = window.scrollY + targetRect.top - headerHeight - 12
+    let scrollPosition = window.scrollY + targetRect.top - headerHeight - 5
 
     const elementType = targetElement.dataset.type
     if (elementType === 'note') {

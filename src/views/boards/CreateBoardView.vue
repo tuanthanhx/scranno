@@ -76,6 +76,9 @@
               :class="{ 'is-adding': screen.addingRectangle }"
               :data-id="screen.id"
             >
+              <div class="mb-2 font-bold">
+                {{ screen.title || 'Untitled' }}
+              </div>
               <div class="relative select-none">
                 <img
                   ref="imageRefs"
@@ -88,7 +91,7 @@
                   v-for="(selection, sIndex) in screen.selections"
                   :key="sIndex"
                   class="selection-box group absolute border-2 border-red-500 hover:border-red-500/50 hover:z-[10000] bg-black/10 cursor-move rounded-md"
-                  :class="{'is-current': selection.id === state.currentBox?.id}"
+                  :class="{ 'is-current': selection.id === state.currentBox?.id }"
                   :style="selectionStyle(selection)"
                   :data-id="selection.id"
                   data-type="note"
