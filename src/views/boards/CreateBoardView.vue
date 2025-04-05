@@ -76,12 +76,6 @@
               :class="{ 'is-adding': screen.addingRectangle }"
               :data-id="screen.id"
             >
-              <button
-                @click="screen.addingRectangle = true"
-                class="button-add-note px-2 py-1 mb-3 bg-green-500 text-white rounded"
-              >
-                Add Note
-              </button>
               <div class="relative select-none">
                 <img
                   ref="imageRefs"
@@ -94,6 +88,7 @@
                   v-for="(selection, sIndex) in screen.selections"
                   :key="sIndex"
                   class="selection-box group absolute border-2 border-red-500 hover:border-red-500/50 hover:z-[10000] bg-black/10 cursor-move rounded-md"
+                  :class="{'is-current': selection.id === state.currentBox?.id}"
                   :style="selectionStyle(selection)"
                   :data-id="selection.id"
                   data-type="note"
@@ -431,7 +426,7 @@ const startAction = (e: MouseEvent) => {
   if (target.classList.contains('resize-handle')) return
   if (target.classList.contains('selection-box')) return
 
-  if (screen.addingRectangle && target.classList.contains('target-image')) {
+  if (target.classList.contains('target-image')) {
     const rect = target.getBoundingClientRect()
     state.isDragging = true
     state.startX = e.clientX - rect.left
@@ -445,6 +440,7 @@ const startAction = (e: MouseEvent) => {
       height: 0,
     }
     state.currentScreen = screen
+    state.currentScreen.addingRectangle = true
     screen.selections.push(state.currentBox)
   }
 }
@@ -672,15 +668,16 @@ const handleEditNote = (newText: string) => {
 </script>
 
 <style scoped>
-.controls.is-adding .target-image {
+.controls .target-image {
   cursor: crosshair;
 }
-.controls.is-adding .button-add-note {
+
+.controls.is-adding .selection-box {
   opacity: 0.5;
   pointer-events: none;
 }
-.controls.is-adding .selection-box {
-  opacity: 0.5;
+.controls.is-adding .selection-box.is-current {
+  opacity: 1;
   pointer-events: none;
 }
 
