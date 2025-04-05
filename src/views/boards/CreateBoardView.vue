@@ -49,9 +49,6 @@
                       </button>
                     </div>
                   </div>
-                  <div class="mt-2 hidden">
-                    <IconList />
-                  </div>
                 </div>
               </li>
             </ul>
@@ -100,6 +97,7 @@
                   :style="selectionStyle(selection)"
                   :data-id="selection.id"
                   data-type="note"
+                  @mouseenter="adjustTooltipPosition"
                   @mousedown.stop="startMove($event, screen, selection)"
                 >
                   <span
@@ -108,7 +106,7 @@
                   >
                   <div
                     v-if="selection.msg?.trim()"
-                    class="absolute w-screen max-w-[350px] break-words left-[75%] bottom-[110%] shadow-md border-2 border-orange-500 rounded-md bg-white/80 p-2 text-base whitespace-pre-wrap hidden group-hover:block after:absolute after:bottom-[-16px] after:left-2 after:border-8 after:border-transparent after:border-t-orange-500"
+                    class="tooltip absolute w-screen max-w-[350px] break-words shadow-md border-2 border-orange-500 rounded-md bg-white/80 p-4 text-base whitespace-pre-wrap hidden group-hover:block"
                   >
                     {{ selection.msg }}
                   </div>
@@ -121,7 +119,6 @@
                   ></div>
                 </div>
               </div>
-              <!-- <div class="max-h-[200px] overflow-auto border-gray-900 border-1"><pre>{{ screen }}</pre></div> -->
             </div>
           </div>
         </div>
@@ -157,9 +154,6 @@
               </div>
             </div>
           </div>
-          <!-- <button @click="triggerImageInput" class="px-4 py-2 bg-blue-500 text-white rounded">
-            Add Screen
-          </button> -->
         </div>
       </div>
     </main>
@@ -201,7 +195,6 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { scrollToElement } from '@/utils/utils'
-import IconList from '@/components/IconList.vue'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import EditScreenModal from '@/components/EditScreenModal.vue'
 import EditNoteModal from '@/components/EditNoteModal.vue'
@@ -239,6 +232,34 @@ const isDragging = ref(false)
 
 const imageRefs = ref<HTMLImageElement[]>([])
 // const importInput = ref<HTMLInputElement | null>(null)
+
+// const parentRefs = ref<Map<number, HTMLElement>>(new Map())
+
+const adjustTooltipPosition = (event: MouseEvent) => {
+  const note = event.currentTarget as HTMLElement
+  const parent = note.closest('.relative') as HTMLElement
+  const tooltip = note.querySelector('.tooltip') as HTMLElement
+
+  if (!note || !tooltip || !parent) return
+
+  const noteRect = note.getBoundingClientRect()
+  const parentRect = parent.getBoundingClientRect()
+  const tooltipRect = tooltip.getBoundingClientRect()
+
+  tooltip.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-top', 'tooltip-bottom')
+
+  if (noteRect.right + tooltipRect.width > parentRect.right) {
+    tooltip.classList.add('tooltip-right')
+  } else {
+    tooltip.classList.add('tooltip-left')
+  }
+
+  if (noteRect.top - tooltipRect.height < parentRect.top) {
+    tooltip.classList.add('tooltip-bottom')
+  } else {
+    tooltip.classList.add('tooltip-top')
+  }
+}
 
 const state = reactive({
   isDragging: false,
@@ -648,7 +669,6 @@ const handleEditNote = (newText: string) => {
   }
   closeModals()
 }
-
 </script>
 
 <style scoped>
@@ -662,5 +682,50 @@ const handleEditNote = (newText: string) => {
 .controls.is-adding .selection-box {
   opacity: 0.5;
   pointer-events: none;
+}
+
+.tooltip.tooltip-left {
+  left: 50%;
+}
+
+.tooltip.tooltip-right {
+  right: 50%;
+}
+
+.tooltip.tooltip-bottom {
+  top: 110%;
+}
+
+.tooltip.tooltip-top {
+  bottom: 110%;
+}
+
+.tooltip:after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+  border: 5px solid transparent;
+}
+.tooltip.tooltip-top.tooltip-left:after {
+  border-top-color: #ff6900;
+  left: 20px;
+  bottom: -12px;
+}
+.tooltip.tooltip-top.tooltip-right:after {
+  border-top-color: #ff6900;
+  right: 20px;
+  bottom: -12px;
+}
+.tooltip.tooltip-bottom.tooltip-left:after {
+  border-bottom-color: #ff6900;
+  left: 20px;
+  top: -12px;
+}
+.tooltip.tooltip-bottom.tooltip-right:after {
+  border-bottom-color: #ff6900;
+  right: 20px;
+  top: -12px;
 }
 </style>
