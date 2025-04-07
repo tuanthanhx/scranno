@@ -8,7 +8,11 @@
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
     >
-      <button class="text-xl hover:scale-125 transition-transform" @click="toggleReaction('👍')">
+      <button
+        class="text-xl hover:scale-125 transition-transform"
+        title="Click to add"
+        @click="toggleReaction('👍')"
+      >
         👍
       </button>
       <div
@@ -33,9 +37,15 @@
     </div>
 
     <div class="mt-2 grid grid-cols-8">
-      <span v-for="emoji in reactions" :key="emoji" class="text-lg">
+      <button
+        v-for="emoji in reactions"
+        :key="emoji"
+        class="text-lg"
+        title="Click to remove"
+        @click="toggleReaction(emoji)"
+      >
         {{ emoji }}
-      </span>
+      </button>
     </div>
   </div>
 </template>

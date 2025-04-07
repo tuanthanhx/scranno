@@ -12,7 +12,7 @@
           to="/boards/create"
           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 px-8 rounded-lg text-lg transition duration-300 cursor-pointer"
         >
-          Get Started
+          Create Now
         </RouterLink>
       </div>
     </div>

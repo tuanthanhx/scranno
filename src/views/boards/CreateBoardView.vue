@@ -39,7 +39,7 @@
                   {{ selection.number }}
                 </div>
                 <div class="flex-1 group">
-                  <div class="whitespace-pre-wrap">
+                  <div class="whitespace-pre-wrap min-h-8">
                     <MessageWithReactions
                       :message="selection.msg"
                       :initial-reactions="selection.reactions"
@@ -49,7 +49,7 @@
                       "
                     />
                   </div>
-                  <div class="mt-2 opacity-0 group-hover:opacity-100">
+                  <div class="opacity-0 group-hover:opacity-100">
                     <div class="flex justify-end space-x-3">
                       <button @click="openEditNoteModal(screen, selection)">
                         <PencilSquareIcon
