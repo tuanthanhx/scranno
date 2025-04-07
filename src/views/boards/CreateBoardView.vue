@@ -38,9 +38,16 @@
                 >
                   {{ selection.number }}
                 </div>
-                <div class="flex-1 group overflow-hidden">
+                <div class="flex-1 group">
                   <div class="whitespace-pre-wrap">
-                    {{ selection.msg }}
+                    <MessageWithReactions
+                      :message="selection.msg"
+                      :initial-reactions="selection.reactions"
+                      @reaction-changed="
+                        (emoji: string, isAdded: boolean) =>
+                          handleReactionChange(selection, emoji, isAdded)
+                      "
+                    />
                   </div>
                   <div class="mt-2 opacity-0 group-hover:opacity-100">
                     <div class="flex justify-end space-x-3">
@@ -206,6 +213,7 @@ import { scrollToElement, selectNote } from '@/utils/utils'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import EditScreenModal from '@/components/EditScreenModal.vue'
 import EditNoteModal from '@/components/EditNoteModal.vue'
+import MessageWithReactions from '@/components/MessageWithReactions.vue'
 import { PencilSquareIcon } from '@heroicons/vue/24/solid'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
@@ -217,6 +225,7 @@ interface Selection {
   width: number
   height: number
   msg?: string
+  reactions?: string[]
   color?: string
 }
 
@@ -699,6 +708,15 @@ const handleEditNote = (newText: string, newColor: string) => {
     }
   }
   closeModals()
+}
+
+const handleReactionChange = (selection: Selection, emoji: string, isAdded: boolean) => {
+  console.log('Selection:', selection)
+  if (isAdded) {
+    console.log(`Add reaction ${emoji}`)
+  } else {
+    console.log(`Remove reaction ${emoji}`)
+  }
 }
 </script>
 
