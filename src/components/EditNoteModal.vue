@@ -46,22 +46,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue';
 
 const props = defineProps<{
-  isOpen: boolean
-  initialText?: string
-  initialColor?: string
-}>()
+  isOpen: boolean;
+  initialText?: string;
+  initialColor?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update', text: string, color: string): void
-  (e: 'close'): void
-}>()
+  (e: 'update', text: string, color: string): void;
+  (e: 'close'): void;
+}>();
 
-const localText = ref('')
-const selectedColor = ref('#ff0000')
-const textArea = ref<HTMLTextAreaElement | null>(null)
+const localText = ref('');
+const selectedColor = ref('#ff0000');
+const textArea = ref<HTMLTextAreaElement | null>(null);
 
 const colors = [
   '#ff0000', // Red
@@ -72,51 +72,51 @@ const colors = [
   '#800080', // Purple
   '#ff00ff', // Magenta
   '#00ffff', // Cyan
-]
+];
 
 watch(
   () => props.isOpen,
   (newVal) => {
     if (newVal) {
-      localText.value = props.initialText || ''
-      selectedColor.value = props.initialColor || '#ff0000'
+      localText.value = props.initialText || '';
+      selectedColor.value = props.initialColor || '#ff0000';
       nextTick(() => {
-        textArea.value?.focus()
-      })
+        textArea.value?.focus();
+      });
     }
   },
-)
+);
 
 watch(
   () => props.initialText,
   (newText) => {
     if (props.isOpen) {
-      localText.value = newText || ''
+      localText.value = newText || '';
     }
   },
-)
+);
 
 watch(
   () => props.initialColor,
   (newColor) => {
     if (props.isOpen) {
-      selectedColor.value = newColor || '#ff0000'
+      selectedColor.value = newColor || '#ff0000';
     }
   },
-)
+);
 
 const selectColor = (color: string) => {
-  selectedColor.value = color
-}
+  selectedColor.value = color;
+};
 
 const save = () => {
-  emit('update', localText.value.trim(), selectedColor.value)
-  emit('close')
-}
+  emit('update', localText.value.trim(), selectedColor.value);
+  emit('close');
+};
 
 const close = () => {
-  localText.value = ''
-  selectedColor.value = '#ff0000'
-  emit('close')
-}
+  localText.value = '';
+  selectedColor.value = '#ff0000';
+  emit('close');
+};
 </script>

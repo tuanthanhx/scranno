@@ -28,49 +28,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue';
 
 const props = defineProps<{
-  isOpen: boolean
-  initialText?: string
-}>()
+  isOpen: boolean;
+  initialText?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update', text: string): void
-  (e: 'close'): void
-}>()
+  (e: 'update', text: string): void;
+  (e: 'close'): void;
+}>();
 
-const localText = ref('')
-const textArea = ref<HTMLTextAreaElement | null>(null)
+const localText = ref('');
+const textArea = ref<HTMLTextAreaElement | null>(null);
 
 watch(
   () => props.isOpen,
   (newVal) => {
     if (newVal) {
-      localText.value = props.initialText || ''
+      localText.value = props.initialText || '';
       nextTick(() => {
-        textArea.value?.focus()
-      })
+        textArea.value?.focus();
+      });
     }
   },
-)
+);
 
 watch(
   () => props.initialText,
   (newText) => {
     if (props.isOpen) {
-      localText.value = newText || ''
+      localText.value = newText || '';
     }
   },
-)
+);
 
 const save = () => {
-  emit('update', localText.value.trim())
-  emit('close')
-}
+  emit('update', localText.value.trim());
+  emit('close');
+};
 
 const close = () => {
-  localText.value = ''
-  emit('close')
-}
+  localText.value = '';
+  emit('close');
+};
 </script>

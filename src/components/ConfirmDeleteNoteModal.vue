@@ -22,22 +22,21 @@
 </template>
 
 <script setup lang="ts">
-
 defineProps<{
-  isOpen: boolean
-}>()
+  isOpen: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'confirm'): void
-  (e: 'close'): void
-}>()
+  (e: 'confirm'): void;
+  (e: 'close'): void;
+}>();
 
 const confirmDelete = () => {
-  emit('confirm')
-  emit('close')
-}
+  emit('confirm');
+  emit('close');
+};
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 </script>

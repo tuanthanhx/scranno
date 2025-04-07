@@ -20,5 +20,5 @@
 </template>
 
 <script setup lang="ts">
-import LogoIcon from '@/components/icons/IconLogo.vue'
+import LogoIcon from '@/components/icons/IconLogo.vue';
 </script>

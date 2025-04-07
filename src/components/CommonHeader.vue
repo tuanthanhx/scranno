@@ -39,12 +39,12 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-import { useNavigation } from '@/utils/useNavigation'
-import LogoIcon from '@/components/icons/IconLogo.vue'
+import { useRoute } from 'vue-router';
+import { useNavigation } from '@/utils/useNavigation';
+import LogoIcon from '@/components/icons/IconLogo.vue';
 
-const route = useRoute()
-const { navigateTo } = useNavigation()
+const route = useRoute();
+const { navigateTo } = useNavigation();
 </script>
 
 <style scoped></style>

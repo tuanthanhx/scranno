@@ -51,57 +51,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps<{
-  message: string | null | undefined
-  initialReactions?: string[]
-}>()
+  message: string | null | undefined;
+  initialReactions?: string[];
+}>();
 
 const emit = defineEmits<{
-  (e: 'reaction-changed', emoji: string, isAdded: boolean): void
-}>()
+  (e: 'reaction-changed', emoji: string, isAdded: boolean): void;
+}>();
 
-const emojis = ['👍', '🔧', '🛠️', '✅', '👀', '🚀', '❌', '🤔', '✋', '📅', '📌', '🔥', '💡', '❤️']
+const emojis = ['👍', '🔧', '🛠️', '✅', '👀', '🚀', '❌', '🤔', '✋', '📅', '📌', '🔥', '💡', '❤️'];
 
-const showPicker = ref(false)
-const reactions = ref(new Set<string>())
+const showPicker = ref(false);
+const reactions = ref(new Set<string>());
 
-let timeoutId: ReturnType<typeof setTimeout> | null = null
+let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
 const toggleReaction = (emoji: string) => {
   if (reactions.value?.has(emoji)) {
-    reactions.value.delete(emoji)
-    emit('reaction-changed', emoji, false)
+    reactions.value.delete(emoji);
+    emit('reaction-changed', emoji, false);
   } else {
-    reactions.value.add(emoji)
-    emit('reaction-changed', emoji, true)
+    reactions.value.add(emoji);
+    emit('reaction-changed', emoji, true);
   }
-  reactions.value = new Set(reactions.value)
-  showPicker.value = false
-}
+  reactions.value = new Set(reactions.value);
+  showPicker.value = false;
+};
 
 const handleMouseEnter = () => {
-  if (timeoutId) clearTimeout(timeoutId)
-  showPicker.value = true
-}
+  if (timeoutId) clearTimeout(timeoutId);
+  showPicker.value = true;
+};
 
 const handleMouseLeave = () => {
   timeoutId = setTimeout(() => {
-    showPicker.value = false
-  }, 300)
-}
+    showPicker.value = false;
+  }, 300);
+};
 
 onMounted(() => {
   if (props.initialReactions && props.initialReactions.length > 0) {
-    props.initialReactions.forEach((emoji) => reactions.value.add(emoji))
-    reactions.value = new Set(reactions.value)
+    props.initialReactions.forEach((emoji) => reactions.value.add(emoji));
+    reactions.value = new Set(reactions.value);
   }
-})
+});
 
 onUnmounted(() => {
-  if (timeoutId) clearTimeout(timeoutId)
-})
+  if (timeoutId) clearTimeout(timeoutId);
+});
 </script>
 
 <style scoped></style>

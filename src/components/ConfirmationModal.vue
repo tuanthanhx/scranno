@@ -22,32 +22,31 @@
 </template>
 
 <script setup lang="ts">
-
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps<{
-  isOpen: boolean
-  title?: string
-  message?: string
-  confirmText?: string
-  cancelText?: string
-}>()
+  isOpen: boolean;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+}>();
 
 const formattedMessage = computed(() => {
   return props.message?.replace(/\\n/g, '\n') || '';
 });
 
 const emit = defineEmits<{
-  (e: 'confirm'): void
-  (e: 'close'): void
-}>()
+  (e: 'confirm'): void;
+  (e: 'close'): void;
+}>();
 
 const confirm = () => {
-  emit('confirm')
-  emit('close')
-}
+  emit('confirm');
+  emit('close');
+};
 
 const close = () => {
-  emit('close')
-}
+  emit('close');
+};
 </script>
