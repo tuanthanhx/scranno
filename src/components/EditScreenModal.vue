@@ -41,7 +41,7 @@ const emit = defineEmits<{
 }>()
 
 const localText = ref('')
-const textArea = ref(null);
+const textArea = ref<HTMLTextAreaElement | null>(null)
 
 watch(
   () => props.isOpen,
@@ -49,8 +49,8 @@ watch(
     if (newVal) {
       localText.value = props.initialText || ''
       nextTick(() => {
-        textArea.value?.focus();
-      });
+        textArea.value?.focus()
+      })
     }
   },
 )

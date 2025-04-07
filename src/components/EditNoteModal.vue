@@ -61,7 +61,7 @@ const emit = defineEmits<{
 
 const localText = ref('')
 const selectedColor = ref('#ff0000')
-const textArea = ref(null);
+const textArea = ref<HTMLTextAreaElement | null>(null)
 
 const colors = [
   '#ff0000', // Red
@@ -81,8 +81,8 @@ watch(
       localText.value = props.initialText || ''
       selectedColor.value = props.initialColor || '#ff0000'
       nextTick(() => {
-        textArea.value?.focus();
-      });
+        textArea.value?.focus()
+      })
     }
   },
 )
