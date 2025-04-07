@@ -17,3 +17,32 @@ export function scrollToElement(elementId: string) {
     })
   }
 }
+
+export function selectNote(noteId: string) {
+  const scrollContainer = document.querySelector('.sidebar-inner') as HTMLElement | null
+  const targetElement = document.querySelector(
+    `[data-sidebar-item-id="${noteId}"]`,
+  ) as HTMLElement | null
+
+  if (!targetElement || !scrollContainer) return
+
+  const containerRect = scrollContainer.getBoundingClientRect()
+  const elementRect = targetElement.getBoundingClientRect()
+
+  const elementTopRelative = elementRect.top - containerRect.top + scrollContainer.scrollTop
+  const elementBottomRelative = elementTopRelative + elementRect.height
+
+  const header = document.querySelector('header') as HTMLElement | null
+  const headerHeight = header ? header.offsetHeight : 0
+
+  const isInView =
+    elementTopRelative >= scrollContainer.scrollTop &&
+    elementBottomRelative <= scrollContainer.scrollTop + scrollContainer.clientHeight
+
+  if (!isInView) {
+    scrollContainer.scrollTo({
+      top: elementTopRelative - headerHeight - 10,
+      behavior: 'smooth',
+    })
+  }
+}

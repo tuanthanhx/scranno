@@ -2,8 +2,7 @@
   <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
     <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
-        ref="scrollContainer"
-        class="fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
+        class="sidebar-inner fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
         <div v-for="(screen, index) in screens" :key="index" :data-index="index">
           <div class="group relative font-bold mb-5 text-center bg-orange-200 leading-5">
@@ -105,7 +104,7 @@
                   data-type="note"
                   @mouseenter="adjustTooltipPosition"
                   @mousedown.stop="startMove($event, screen, selection)"
-                  @click="selectNote(selection)"
+                  @click="selectNote(selection.id)"
                 >
                   <span
                     class="w-6 h-6 mt-1 ml-1 flex justify-center content-center items-center rounded-full text-xs font-bold cursor-move group-hover:opacity-20"
@@ -203,7 +202,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
-import { scrollToElement } from '@/utils/utils'
+import { scrollToElement, selectNote } from '@/utils/utils'
 import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import EditScreenModal from '@/components/EditScreenModal.vue'
 import EditNoteModal from '@/components/EditNoteModal.vue'
@@ -241,8 +240,8 @@ const dropZone = ref<HTMLElement | null>(null)
 const isDragging = ref(false)
 
 const imageRefs = ref<HTMLImageElement[]>([])
-// const importInput = ref<HTMLInputElement | null>(null)
 
+// const importInput = ref<HTMLInputElement | null>(null)
 // const parentRefs = ref<Map<number, HTMLElement>>(new Map())
 
 const adjustTooltipPosition = (event: MouseEvent) => {
@@ -592,7 +591,7 @@ const endMove = () => {
   state.currentBox = null
 }
 
-// CUSTOM
+// CUSTOM STYLE
 
 const getContrastColor = (hexColor: string): string => {
   const hex = hexColor.replace('#', '')
@@ -607,38 +606,6 @@ const getDynamicStyles = (color: string) => {
   return {
     backgroundColor: color,
     color: getContrastColor(color),
-  }
-}
-
-const scrollContainer = ref<HTMLElement | null>(null)
-
-const selectNote = (note: Selection) => {
-
-  const targetElement = document.querySelector(
-    `[data-sidebar-item-id="${note.id}"]`,
-  ) as HTMLElement | null
-
-  if (!targetElement || !scrollContainer.value) return
-
-  const container = scrollContainer.value
-  const containerRect = container.getBoundingClientRect()
-  const elementRect = targetElement.getBoundingClientRect()
-
-  const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop
-  const elementBottomRelative = elementTopRelative + elementRect.height
-
-  const header = document.querySelector('header') as HTMLElement | null
-  const headerHeight = header ? header.offsetHeight : 0
-
-  const isInView =
-    elementTopRelative >= container.scrollTop &&
-    elementBottomRelative <= container.scrollTop + container.clientHeight
-
-  if (!isInView) {
-    container.scrollTo({
-      top: elementTopRelative - headerHeight - 10,
-      behavior: 'smooth',
-    })
   }
 }
 
