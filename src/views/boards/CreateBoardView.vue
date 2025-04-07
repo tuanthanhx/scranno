@@ -258,7 +258,7 @@ const adjustTooltipPosition = (event: MouseEvent) => {
 
   tooltip.classList.remove('tooltip-left', 'tooltip-right', 'tooltip-top', 'tooltip-bottom')
 
-  if (noteRect.right + tooltipRect.width > parentRect.right) {
+  if (noteRect.right + tooltipRect.width > parentRect.right + noteRect.width * 0.5) {
     tooltip.classList.add('tooltip-right')
   } else {
     tooltip.classList.add('tooltip-left')
