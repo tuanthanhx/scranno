@@ -3,6 +3,7 @@
     <div class="bg-white p-6 rounded-lg w-full max-w-md">
       <h3 class="text-lg font-semibold mb-4">Screen Name</h3>
       <textarea
+        ref="textArea"
         v-model="localText"
         placeholder="Enter your note here"
         rows="4"
@@ -27,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -40,12 +41,16 @@ const emit = defineEmits<{
 }>()
 
 const localText = ref('')
+const textArea = ref(null);
 
 watch(
   () => props.isOpen,
   (newVal) => {
     if (newVal) {
       localText.value = props.initialText || ''
+      nextTick(() => {
+        textArea.value?.focus();
+      });
     }
   },
 )
@@ -60,7 +65,7 @@ watch(
 )
 
 const save = () => {
-  emit('update', localText.value)
+  emit('update', localText.value.trim())
   emit('close')
 }
 
