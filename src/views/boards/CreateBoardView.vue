@@ -2,6 +2,7 @@
   <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
     <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
+        ref="scrollContainer"
         class="fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
         <div v-for="(screen, index) in screens" :key="index" :data-index="index">
@@ -22,11 +23,18 @@
               </button>
             </div>
           </div>
-          <div class="px-4">
+          <div class="px-2">
             <ul class="space-y-4">
-              <li v-for="(selection, sIndex) in screen.selections" :key="sIndex" class="flex">
+              <li
+                v-for="(selection, sIndex) in screen.selections"
+                :key="sIndex"
+                :data-sidebar-item-id="selection.id"
+                class="flex p-2"
+                :class="{ 'bg-orange-100': selection.id === state.currentBox?.id }"
+              >
                 <div
-                  class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center bg-red-500 rounded-full text-xs font-bold text-white cursor-pointer"
+                  class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center rounded-full text-xs font-bold cursor-pointer"
+                  :style="getDynamicStyles(selection.color || '#ff0000')"
                   @click="scrollToElement(selection.id)"
                 >
                   {{ selection.number }}
@@ -90,16 +98,18 @@
                 <div
                   v-for="(selection, sIndex) in screen.selections"
                   :key="sIndex"
-                  class="selection-box group absolute border-2 border-red-500 hover:border-red-500/50 hover:z-[10000] bg-black/10 cursor-move rounded-md"
+                  class="selection-box group absolute border-2 hover:z-[10000] bg-black/10 cursor-move rounded-md"
                   :class="{ 'is-current': selection.id === state.currentBox?.id }"
                   :style="selectionStyle(selection)"
                   :data-id="selection.id"
                   data-type="note"
                   @mouseenter="adjustTooltipPosition"
                   @mousedown.stop="startMove($event, screen, selection)"
+                  @click="selectNote(selection)"
                 >
                   <span
-                    class="w-6 h-6 mt-1 ml-1 flex justify-center items-center bg-red-500 rounded-full text-xs font-bold text-white group-hover:opacity-20"
+                    class="w-6 h-6 mt-1 ml-1 flex justify-center content-center items-center rounded-full text-xs font-bold cursor-move group-hover:opacity-20"
+                    :style="getDynamicStyles(selection.color || '#ff0000')"
                     >{{ selection.number }}</span
                   >
                   <div
@@ -165,6 +175,7 @@
     <EditNoteModal
       :is-open="modalState.showEditNoteModal"
       :initial-text="modalState.selectedNote?.msg"
+      :initial-color="modalState.selectedNote?.color"
       @update="handleEditNote"
       @close="closeModals"
     />
@@ -207,6 +218,7 @@ interface Selection {
   width: number
   height: number
   msg?: string
+  color?: string
 }
 
 interface Screen {
@@ -398,6 +410,7 @@ const selectionStyle = (selection: Selection) => ({
   top: `${selection.y}px`,
   width: `${selection.width}px`,
   height: `${selection.height}px`,
+  borderColor: selection.color,
 })
 
 const resizeHandleClass = (corner: string) => ({
@@ -490,6 +503,7 @@ const drawSelection = (e: MouseEvent) => {
     state.currentBox.height = Math.abs(currentY - state.startY)
     state.currentBox.x = Math.min(state.startX, currentX)
     state.currentBox.y = Math.min(state.startY, currentY)
+    state.currentBox.color = '#ff0000'
   }
 }
 
@@ -578,6 +592,56 @@ const endMove = () => {
   state.currentBox = null
 }
 
+// CUSTOM
+
+const getContrastColor = (hexColor: string): string => {
+  const hex = hexColor.replace('#', '')
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.5 ? '#000000' : '#ffffff'
+}
+
+const getDynamicStyles = (color: string) => {
+  return {
+    backgroundColor: color,
+    color: getContrastColor(color),
+  }
+}
+
+const scrollContainer = ref<HTMLElement | null>(null)
+
+const selectNote = (note: Selection) => {
+
+  const targetElement = document.querySelector(
+    `[data-sidebar-item-id="${note.id}"]`,
+  ) as HTMLElement | null
+
+  if (!targetElement || !scrollContainer.value) return
+
+  const container = scrollContainer.value
+  const containerRect = container.getBoundingClientRect()
+  const elementRect = targetElement.getBoundingClientRect()
+
+  const elementTopRelative = elementRect.top - containerRect.top + container.scrollTop
+  const elementBottomRelative = elementTopRelative + elementRect.height
+
+  const header = document.querySelector('header') as HTMLElement | null
+  const headerHeight = header ? header.offsetHeight : 0
+
+  const isInView =
+    elementTopRelative >= container.scrollTop &&
+    elementBottomRelative <= container.scrollTop + container.clientHeight
+
+  if (!isInView) {
+    container.scrollTo({
+      top: elementTopRelative - headerHeight - 10,
+      behavior: 'smooth',
+    })
+  }
+}
+
 // MODALS
 
 interface ModalState {
@@ -658,12 +722,13 @@ const handleEditScreen = (newTitle: string) => {
   closeModals()
 }
 
-const handleEditNote = (newText: string) => {
+const handleEditNote = (newText: string, newColor: string) => {
   const screen = screens.value.find((s) => s.id === modalState.selectedScreen?.id)
   if (screen) {
     const selection = screen.selections.find((sel) => sel.id === modalState.selectedNote?.id)
     if (selection) {
       selection.msg = newText
+      selection.color = newColor
     }
   }
   closeModals()
