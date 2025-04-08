@@ -1,4 +1,5 @@
 import { ApiService } from '@/services/apiService';
+import { delay } from '@/utils/utils';
 import type { ApiResponse, Board } from '@/types';
 
 export class BoardService extends ApiService {
@@ -102,6 +103,11 @@ export class BoardService extends ApiService {
         },
       ],
     };
+
+    // Simulate a delay if local development
+    if (import.meta.env.MODE === 'development') {
+      await delay(1000);
+    }
     return Promise.resolve({
       data: mockData,
       status: 200,

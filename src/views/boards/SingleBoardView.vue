@@ -98,13 +98,19 @@
       </div>
     </main>
   </div>
+  <div v-if="isLoading" class="loading-overlay fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-[12000]">
+    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { BoardService } from '@/services/boardService';
 import { scrollToElement, selectNote } from '@/utils/utils';
 import MessageWithReactions from '@/components/MessageWithReactions.vue';
+
+const route = useRoute();
 
 const boardService = new BoardService();
 
@@ -200,7 +206,7 @@ const handleReactionChange = (selection: Selection, emoji: string, isAdded: bool
 const fetchBoard = async () => {
   try {
     isLoading.value = true;
-    const response = await boardService.getBoard('DUMMY');
+    const response = await boardService.getBoard(route.params.id as string);
     if (response.data?.screens?.length) {
       screens.value = response.data.screens;
     }
@@ -212,6 +218,10 @@ const fetchBoard = async () => {
 }
 
 onMounted(() => {
+  if (!route.params.id) {
+    console.error('No board ID provided');
+    return;
+  }
   fetchBoard();
 });
 </script>
