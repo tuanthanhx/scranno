@@ -1,4 +1,12 @@
 <template>
+  <div
+    v-if="isLoading"
+    class="loading-overlay fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-[12000]"
+  >
+    <div
+      class="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"
+    ></div>
+  </div>
   <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
     <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
@@ -45,20 +53,14 @@
     </aside>
     <main class="w-full pt-[60px]">
       <div class="mx-auto w-full max-w-[1200px] pb-8">
-        <div
-          id="screens"
-          class="space-y-10 py-5"
-        >
+        <div id="screens" class="space-y-10 py-5">
           <div
             v-for="(screen, index) in screens"
             :key="index"
             class="screen-container"
             :data-index="index"
           >
-            <div
-              class="controls overflow-hidden"
-              :data-id="screen.id"
-            >
+            <div class="controls overflow-hidden" :data-id="screen.id">
               <div class="mb-2 font-bold">
                 {{ screen.title || 'Untitled' }}
               </div>
@@ -98,9 +100,6 @@
       </div>
     </main>
   </div>
-  <div v-if="isLoading" class="loading-overlay fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-[12000]">
-    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -109,34 +108,11 @@ import { useRoute } from 'vue-router';
 import { BoardService } from '@/services/boardService';
 import { scrollToElement, selectNote } from '@/utils/utils';
 import MessageWithReactions from '@/components/MessageWithReactions.vue';
+import type { Screen, Selection } from '@/types';
 
 const route = useRoute();
 
 const boardService = new BoardService();
-
-interface Selection {
-  id: string;
-  number: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  msg?: string;
-  reactions?: string[];
-  color?: string;
-}
-
-interface Screen {
-  id: string;
-  title: string;
-  index: number;
-  imageUrl: string;
-  width: number;
-  height: number;
-  addingRectangle: boolean;
-  status: string;
-  selections: Selection[];
-}
 
 const isLoading = ref(false);
 
@@ -211,11 +187,11 @@ const fetchBoard = async () => {
       screens.value = response.data.screens;
     }
   } catch (err) {
-    console.error(err)
+    console.error(err);
   } finally {
     isLoading.value = false;
   }
-}
+};
 
 onMounted(() => {
   if (!route.params.id) {

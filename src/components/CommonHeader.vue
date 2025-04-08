@@ -23,16 +23,28 @@
         </button>
       </template>
       <template v-else-if="route.name === 'SingleBoard'">
-        <div class="flex items-center gap-2 cursor-pointer" @click="copyToClipboard">
-          <div>{{ link }}</div>
-          <DocumentDuplicateIcon class="w-5 h-5 text-gray-500 hover:text-gray-700" />
+        <div class="flex items-center space-x-8">
+          <div class="text-sm relative group cursor-default">
+            Expires in:
+            <span class="font-semibold">
+              {{ expirationDays }} days
+              <span
+                class="absolute left-1/2 transform -translate-x-1/2 -top-4.5 mb-2 hidden group-hover:block bg-gray-900/80 text-white text-xs rounded py-1 px-2 whitespace-nowrap"
+              >
+                {{ expirationTime }}
+              </span>
+            </span>
+          </div>
+          <div class="flex items-center gap-2 cursor-pointer" @click="copyToClipboard">
+            <div>{{ link }}</div>
+            <DocumentDuplicateIcon class="w-5 h-5 text-gray-500 hover:text-gray-700" />
+          </div>
+          <button
+            class="inline-block min-w-[100px] bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 cursor-pointer"
+          >
+            Fork
+          </button>
         </div>
-        <button
-          class="inline-block min-w-[100px] bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 cursor-pointer"
-          @click="navigateTo('/boards/snT4GCX/edit')"
-        >
-          Edit
-        </button>
       </template>
       <template v-else>
         <button
@@ -53,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useNavigation } from '@/utils/useNavigation';
 import LogoIcon from '@/components/icons/IconLogo.vue';
@@ -63,6 +75,7 @@ const route = useRoute();
 const { navigateTo } = useNavigation();
 
 const link = ref('https://scranno.com/snT4GCX'); // @TODO: Dummy
+const expirationDate = ref('2025-04-13T10:03:48.227Z'); // @TODO: Dummy
 
 const copyToClipboard = async () => {
   try {
@@ -71,6 +84,29 @@ const copyToClipboard = async () => {
     console.error('Failed to copy:', err);
   }
 };
+
+// Computed property for expiration days
+const expirationDays = computed(() => {
+  const now = new Date();
+  const expiry = new Date(expirationDate.value);
+  const diffTime = expiry.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+});
+
+// Computed property for formatted expiration date
+const expirationTime = computed(() => {
+  const expiry = new Date(expirationDate.value);
+  return expiry.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+});
 </script>
 
 <style scoped></style>

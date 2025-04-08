@@ -104,10 +104,8 @@ export class BoardService extends ApiService {
       ],
     };
 
-    // Simulate a delay if local development
-    if (import.meta.env.MODE === 'development') {
-      await delay(1000);
-    }
+    await delay(1000);
+
     return Promise.resolve({
       data: mockData,
       status: 200,

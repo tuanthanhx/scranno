@@ -81,7 +81,7 @@ export function selectNote(noteId: string): void {
  * If interval is less than or equal to 0, it resolves immediately.
  */
 export function delay(interval: number, isDevMode = false): Promise<boolean> {
-  if (isDevMode && process.env.NODE_ENV !== 'development') {
+  if (isDevMode && import.meta.env.NODE_ENV !== 'development') {
     return Promise.resolve(true);
   }
   if (interval <= 0) {
