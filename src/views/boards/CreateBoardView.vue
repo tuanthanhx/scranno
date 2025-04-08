@@ -195,42 +195,31 @@
       @confirm="handleDeleteNote"
       @close="closeModals"
     />
+    <SaveModal
+      :is-open="modalState.showSaveBoardModal"
+      @save="handleSaveBoard"
+      @close="closeModals"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
+import { BoardService } from '@/services/boardService';
+import { emitter } from '@/utils/eventBus';
 import { scrollToElement, selectNote } from '@/utils/utils';
+import { useNavigation } from '@/utils/useNavigation';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import EditScreenModal from '@/components/EditScreenModal.vue';
 import EditNoteModal from '@/components/EditNoteModal.vue';
+import SaveModal from '@/components/SaveModal.vue';
 import { PencilSquareIcon } from '@heroicons/vue/24/solid';
 import { TrashIcon } from '@heroicons/vue/24/solid';
+import type { Screen, Selection } from '@/types';
 
-interface Selection {
-  id: string;
-  number: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  msg?: string;
-  reactions?: string[];
-  color?: string;
-}
-
-interface Screen {
-  id: string;
-  title: string;
-  index: number;
-  imageUrl: string;
-  width: number;
-  height: number;
-  addingRectangle: boolean;
-  status: string;
-  selections: Selection[];
-}
+const boardService = new BoardService();
+const { navigateTo } = useNavigation();
 
 const screens = ref<Screen[]>([]);
 const screensContainer = ref<HTMLElement | null>(null);
@@ -603,6 +592,7 @@ interface ModalState {
   showDeleteNoteModal: boolean;
   showEditScreenModal: boolean;
   showEditNoteModal: boolean;
+  showSaveBoardModal: boolean;
   selectedScreen: Screen | null;
   selectedNote: Selection | null;
 }
@@ -612,6 +602,7 @@ const modalState = reactive<ModalState>({
   showDeleteNoteModal: false,
   showEditScreenModal: false,
   showEditNoteModal: false,
+  showSaveBoardModal: false,
   selectedScreen: null,
   selectedNote: null,
 });
@@ -621,6 +612,7 @@ const closeModals = () => {
   modalState.showDeleteNoteModal = false;
   modalState.showEditScreenModal = false;
   modalState.showEditNoteModal = false;
+  modalState.showSaveBoardModal = false;
 };
 
 const openConfirmDeleteScreenModal = (screen: Screen) => {
@@ -652,7 +644,6 @@ const handleDeleteScreen = () => {
   if (screenIndex !== -1) {
     screens.value.splice(screenIndex, 1);
   }
-  closeModals();
 };
 
 const handleDeleteNote = () => {
@@ -665,7 +656,6 @@ const handleDeleteNote = () => {
       screen.selections.splice(selectionIndex, 1);
     }
   }
-  closeModals();
 };
 
 const handleEditScreen = (newTitle: string) => {
@@ -673,7 +663,6 @@ const handleEditScreen = (newTitle: string) => {
   if (screen) {
     screen.title = newTitle;
   }
-  closeModals();
 };
 
 const handleEditNote = (newText: string, newColor: string) => {
@@ -685,17 +674,42 @@ const handleEditNote = (newText: string, newColor: string) => {
       selection.color = newColor;
     }
   }
-  closeModals();
+};
+
+const openSaveBoardModal = () => {
+  modalState.showSaveBoardModal = true;
+};
+
+const handleTriggerSave = () => {
+  if (screens.value.length === 0) {
+    alert('Please add at least one screen before saving.');
+    return;
+  }
+  openSaveBoardModal();
+};
+
+const handleSaveBoard = async (boardName: string) => {
+  const response = await boardService.createBoard({
+    name: boardName,
+    screens: JSON.parse(JSON.stringify(screens.value)),
+  });
+  if (response.status === 200) {
+    navigateTo({ path: `/boards/${response.data.id}`, query: { sharing: true } });
+  } else {
+    console.error('Failed to save the board');
+  }
 };
 
 onMounted(() => {
   document.addEventListener('mousemove', handleMouseMove);
   document.addEventListener('mouseup', endAction);
+  emitter.on('save', handleTriggerSave);
 });
 
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleMouseMove);
   document.removeEventListener('mouseup', endAction);
+  emitter.off('save', handleTriggerSave);
 });
 </script>
 

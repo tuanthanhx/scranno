@@ -17,7 +17,7 @@
 
         <button
           class="inline-block min-w-[100px] bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 cursor-pointer"
-          @click="navigateTo('/boards/snT4GCX')"
+          @click="triggerSave"
         >
           Save
         </button>
@@ -42,7 +42,7 @@
           <button
             class="inline-block min-w-[100px] bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 cursor-pointer"
           >
-            Fork
+            Edit
           </button>
         </div>
       </template>
@@ -67,6 +67,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { emitter } from '@/utils/eventBus';
 import { useNavigation } from '@/utils/useNavigation';
 import LogoIcon from '@/components/icons/IconLogo.vue';
 import { DocumentDuplicateIcon } from '@heroicons/vue/24/solid';
@@ -107,6 +108,10 @@ const expirationTime = computed(() => {
     hour12: true,
   });
 });
+
+const triggerSave = () => {
+  emitter.emit('save');
+};
 </script>
 
 <style scoped></style>

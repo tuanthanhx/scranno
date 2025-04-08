@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="isLoading"
-    class="loading-overlay fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-[12000]"
+    class="loading-overlay fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-[30000]"
   >
     <div
       class="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"
@@ -99,18 +99,25 @@
         </div>
       </div>
     </main>
+    <ShareModal
+      :is-open="modalState.showShareBoardModal"
+      @close="closeModals"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { BoardService } from '@/services/boardService';
 import { scrollToElement, selectNote } from '@/utils/utils';
+import { useNavigation } from '@/utils/useNavigation';
 import MessageWithReactions from '@/components/MessageWithReactions.vue';
+import ShareModal from '@/components/ShareModal.vue';
 import type { Screen, Selection } from '@/types';
 
 const route = useRoute();
+const { navigateTo } = useNavigation();
 
 const boardService = new BoardService();
 
@@ -179,6 +186,18 @@ const handleReactionChange = (selection: Selection, emoji: string, isAdded: bool
   }
 };
 
+interface ModalState {
+  showShareBoardModal: boolean;
+}
+
+const modalState = reactive<ModalState>({
+  showShareBoardModal: false,
+});
+
+const closeModals = () => {
+  modalState.showShareBoardModal = false;
+};
+
 const fetchBoard = async () => {
   try {
     isLoading.value = true;
@@ -197,6 +216,10 @@ onMounted(() => {
   if (!route.params.id) {
     console.error('No board ID provided');
     return;
+  }
+  if (route.query.sharing === 'true') {
+    modalState.showShareBoardModal = true;
+    navigateTo(`/boards/${route.params.id}`, { replace: true });
   }
   fetchBoard();
 });
