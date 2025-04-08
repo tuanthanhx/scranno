@@ -60,7 +60,7 @@
             class="screen-container"
             :data-index="index"
           >
-            <div class="controls overflow-hidden" :data-id="screen.id">
+            <div class="controls" :data-id="screen.id">
               <div class="mb-2 font-bold">
                 {{ screen.title || 'Untitled' }}
               </div>

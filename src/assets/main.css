@@ -9,11 +9,11 @@
 }
 
 .tooltip.tooltip-top {
-  bottom: 110%;
+  bottom: calc(100% + 10px);
 }
 
 .tooltip.tooltip-bottom {
-  top: 110%;
+  top: calc(100% + 10px);
 }
 
 .tooltip:after {

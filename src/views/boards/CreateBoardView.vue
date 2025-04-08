@@ -78,7 +78,7 @@
             :data-index="index"
           >
             <div
-              class="controls overflow-hidden"
+              class="controls"
               :class="{ 'is-adding': screen.addingRectangle }"
               :data-id="screen.id"
             >
