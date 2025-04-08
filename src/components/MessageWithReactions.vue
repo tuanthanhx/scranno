@@ -1,19 +1,19 @@
 <template>
   <div class="relative group">
     <div>
-      {{ message }}
+      {{ message || '&nbsp;' }}
     </div>
     <div
-      class="absolute top-0 right-0 mt-[-10px] opacity-0 group-hover:opacity-100 transition-opacity"
+      class="absolute top-0 -right-4 mt-[-10px] opacity-0 group-hover:opacity-100 transition-opacity"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
     >
       <button
         class="text-xl hover:scale-125 transition-transform"
         title="Click to add"
-        @click="toggleReaction('👍')"
+        @click="toggleReaction(EMOJI_DEFAULT)"
       >
-        👍
+        {{ EMOJI_DEFAULT }}
       </button>
       <div
         v-if="showPicker"
@@ -21,7 +21,7 @@
       >
         <div class="flex flex-wrap gap-2">
           <button
-            v-for="emoji in emojis"
+            v-for="emoji in EMOJI_LIST"
             :key="emoji"
             :class="[
               'text-lg transition-transform hover:scale-125 hover:opacity-100 hover:grayscale-0',
@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <div class="mt-2 grid grid-cols-8">
+    <div class="grid grid-cols-8">
       <button
         v-for="emoji in reactions"
         :key="emoji"
@@ -62,7 +62,8 @@ const emit = defineEmits<{
   (e: 'reaction-changed', emoji: string, isAdded: boolean): void;
 }>();
 
-const emojis = ['👍', '🔧', '🛠️', '✅', '👀', '🚀', '❌', '🤔', '✋', '📅', '📌', '🔥', '💡', '❤️'];
+const EMOJI_DEFAULT = '👍';
+const EMOJI_LIST = ['👍', '🔧', '🛠️', '✅', '👀', '🚀', '❌', '🤔', '✋', '📅', '📌', '🔥', '💡', '❤️'];
 
 const showPicker = ref(false);
 const reactions = ref(new Set<string>());

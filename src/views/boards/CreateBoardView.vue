@@ -10,6 +10,7 @@
               {{ screen.title || 'Untitled' }}
             </div>
             <div
+              v-if="IS_EDITOR_MODE"
               class="absolute bg-white/50 p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
             >
               <button @click="openEditScreenModal(screen)">
@@ -39,8 +40,10 @@
                   {{ selection.number }}
                 </div>
                 <div class="flex-1 group">
-                  <div class="whitespace-pre-wrap min-h-8">
+                  <div class="whitespace-pre-wrap">
+                    <div v-if="IS_EDITOR_MODE">{{ selection.msg || '&nbsp;' }}</div>
                     <MessageWithReactions
+                      v-else
                       :message="selection.msg"
                       :initial-reactions="selection.reactions"
                       @reaction-changed="
@@ -49,7 +52,7 @@
                       "
                     />
                   </div>
-                  <div class="opacity-0 group-hover:opacity-100">
+                  <div v-if="IS_EDITOR_MODE" class="mt-2 opacity-50 group-hover:opacity-100">
                     <div class="flex justify-end space-x-3">
                       <button @click="openEditNoteModal(screen, selection)">
                         <PencilSquareIcon
@@ -136,7 +139,7 @@
             </div>
           </div>
         </div>
-        <div class="footer-controls py-5">
+        <div v-if="IS_EDITOR_MODE" class="footer-controls py-5">
           <div class="controls py-5">
             <div
               ref="dropZone"
@@ -207,9 +210,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, watch, computed, onMounted, onUnmounted } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import { scrollToElement, selectNote } from '@/utils/utils';
+import { emitter } from '@/utils/eventBus';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import EditScreenModal from '@/components/EditScreenModal.vue';
 import EditNoteModal from '@/components/EditNoteModal.vue';
@@ -240,6 +244,8 @@ interface Screen {
   status: string;
   selections: Selection[];
 }
+
+const IS_EDITOR_MODE = ref(true);
 
 const screens = ref<Screen[]>([]);
 const screensContainer = ref<HTMLElement | null>(null);
@@ -300,14 +306,32 @@ const highestSelectionNumber = computed(() => {
   return allNumbers.length > 0 ? Math.max(...allNumbers) : 0;
 });
 
+watch(IS_EDITOR_MODE, (newValue) => {
+  emitter.emit('editorModeChange', newValue);
+});
+
+emitter.emit('editorModeChange', IS_EDITOR_MODE.value);
+
+const handleTriggerSave = () => {
+  IS_EDITOR_MODE.value = false;
+};
+
+const handleTriggerEdit = () => {
+  IS_EDITOR_MODE.value = true;
+};
+
 onMounted(() => {
   document.addEventListener('mousemove', handleMouseMove);
   document.addEventListener('mouseup', endAction);
+  emitter.on('save', handleTriggerSave);
+  emitter.on('edit', handleTriggerEdit);
 });
 
 onUnmounted(() => {
   document.removeEventListener('mousemove', handleMouseMove);
   document.removeEventListener('mouseup', endAction);
+  emitter.off('save', handleTriggerSave);
+  emitter.off('edit', handleTriggerEdit);
 });
 
 const triggerFileInput = () => {

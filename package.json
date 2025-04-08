@@ -18,6 +18,7 @@
     "@vercel/blob": "^0.27.3",
     "@vercel/node": "^5.1.14",
     "formidable": "^3.5.2",
+    "mitt": "^3.0.1",
     "pinia": "^3.0.1",
     "sharp": "^0.33.5",
     "tailwindcss": "^4.1.0",
