@@ -86,8 +86,8 @@ const triggerEdit = () => {
 };
 
 onMounted(() => {
-  emitter.on('editorModeChange', (value: boolean) => {
-    isEditorMode.value = value;
+  emitter.on('editorModeChange', (value: unknown) => {
+    isEditorMode.value = value as boolean;
   });
 });
 
