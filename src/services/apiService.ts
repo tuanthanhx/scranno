@@ -1,15 +1,13 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import type { ApiResponse } from '@/types';
-import { UserService } from '@/services/userService';
-import { ProductService } from '@/services/productService';
 
 export class ApiService {
   protected api: AxiosInstance;
 
   constructor() {
     this.api = axios.create({
-      baseURL: 'https://api.example.com',
+      baseURL: import.meta.env.VITE_API_URL,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
@@ -71,8 +69,3 @@ export class ApiService {
     };
   }
 }
-
-export const apiService = {
-  user: new UserService(),
-  product: new ProductService(),
-};

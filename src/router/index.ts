@@ -19,6 +19,11 @@ const router = createRouter({
       name: 'CreateBoard',
       component: () => import('../views/boards/CreateBoardView.vue'),
     },
+    {
+      path: '/boards/:id',
+      name: 'SingleBoard',
+      component: () => import('../views/boards/SingleBoardView.vue'),
+    },
   ],
 });
 

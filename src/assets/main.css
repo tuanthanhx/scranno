@@ -1,1 +1,50 @@
 @import './base.css';
+
+.tooltip.tooltip-left {
+  left: 50%;
+}
+
+.tooltip.tooltip-right {
+  right: 50%;
+}
+
+.tooltip.tooltip-top {
+  bottom: 110%;
+}
+
+.tooltip.tooltip-bottom {
+  top: 110%;
+}
+
+.tooltip:after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  position: absolute;
+  border: 5px solid transparent;
+}
+
+.tooltip.tooltip-top.tooltip-left:after {
+  border-top-color: #ff6900;
+  left: 20px;
+  bottom: -12px;
+}
+
+.tooltip.tooltip-top.tooltip-right:after {
+  border-top-color: #ff6900;
+  right: 20px;
+  bottom: -12px;
+}
+
+.tooltip.tooltip-bottom.tooltip-left:after {
+  border-bottom-color: #ff6900;
+  left: 20px;
+  top: -12px;
+}
+
+.tooltip.tooltip-bottom.tooltip-right:after {
+  border-bottom-color: #ff6900;
+  right: 20px;
+  top: -12px;
+}

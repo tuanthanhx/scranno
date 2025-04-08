@@ -26,6 +26,11 @@ export function selectNote(noteId: string) {
 
   if (!targetElement || !scrollContainer) return;
 
+  targetElement.classList.add('bg-yellow-100', 'transition-colors', 'duration-300');
+  setTimeout(() => {
+    targetElement.classList.remove('bg-yellow-100', 'transition-colors', 'duration-300');
+  }, 1000);
+
   const containerRect = scrollContainer.getBoundingClientRect();
   const elementRect = targetElement.getBoundingClientRect();
 

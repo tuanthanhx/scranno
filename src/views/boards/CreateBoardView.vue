@@ -10,7 +10,6 @@
               {{ screen.title || 'Untitled' }}
             </div>
             <div
-              v-if="IS_EDITOR_MODE"
               class="absolute bg-white/50 p-2 rounded-md top-1/2 translate-y-[-50%] right-4 opacity-0 group-hover:opacity-100 flex space-x-3"
             >
               <button @click="openEditScreenModal(screen)">
@@ -30,7 +29,6 @@
                 :key="sIndex"
                 :data-sidebar-item-id="selection.id"
                 class="flex p-2"
-                :class="{ 'bg-orange-100': selection.id === state.currentBox?.id }"
               >
                 <div
                   class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center rounded-full text-xs font-bold cursor-pointer"
@@ -41,18 +39,9 @@
                 </div>
                 <div class="flex-1 group">
                   <div class="whitespace-pre-wrap">
-                    <div v-if="IS_EDITOR_MODE">{{ selection.msg || '&nbsp;' }}</div>
-                    <MessageWithReactions
-                      v-else
-                      :message="selection.msg"
-                      :initial-reactions="selection.reactions"
-                      @reaction-changed="
-                        (emoji: string, isAdded: boolean) =>
-                          handleReactionChange(selection, emoji, isAdded)
-                      "
-                    />
+                    <div>{{ selection.msg || '&nbsp;' }}</div>
                   </div>
-                  <div v-if="IS_EDITOR_MODE" class="mt-2 opacity-50 group-hover:opacity-100">
+                  <div class="mt-2 opacity-50 group-hover:opacity-100">
                     <div class="flex justify-end space-x-3">
                       <button @click="openEditNoteModal(screen, selection)">
                         <PencilSquareIcon
@@ -139,7 +128,7 @@
             </div>
           </div>
         </div>
-        <div v-if="IS_EDITOR_MODE" class="footer-controls py-5">
+        <div class="footer-controls py-5">
           <div class="controls py-5">
             <div
               ref="dropZone"
@@ -210,14 +199,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import { scrollToElement, selectNote } from '@/utils/utils';
-import { emitter } from '@/utils/eventBus';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import EditScreenModal from '@/components/EditScreenModal.vue';
 import EditNoteModal from '@/components/EditNoteModal.vue';
-import MessageWithReactions from '@/components/MessageWithReactions.vue';
 import { PencilSquareIcon } from '@heroicons/vue/24/solid';
 import { TrashIcon } from '@heroicons/vue/24/solid';
 
@@ -245,8 +232,6 @@ interface Screen {
   selections: Selection[];
 }
 
-const IS_EDITOR_MODE = ref(true);
-
 const screens = ref<Screen[]>([]);
 const screensContainer = ref<HTMLElement | null>(null);
 
@@ -255,9 +240,6 @@ const dropZone = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
 
 const imageRefs = ref<HTMLImageElement[]>([]);
-
-// const importInput = ref<HTMLInputElement | null>(null)
-// const parentRefs = ref<Map<number, HTMLElement>>(new Map())
 
 const adjustTooltipPosition = (event: MouseEvent) => {
   const note = event.currentTarget as HTMLElement;
@@ -304,34 +286,6 @@ const highestSelectionNumber = computed(() => {
     .map((selection) => selection.number);
 
   return allNumbers.length > 0 ? Math.max(...allNumbers) : 0;
-});
-
-watch(IS_EDITOR_MODE, (newValue) => {
-  emitter.emit('editorModeChange', newValue);
-});
-
-emitter.emit('editorModeChange', IS_EDITOR_MODE.value);
-
-const handleTriggerSave = () => {
-  IS_EDITOR_MODE.value = false;
-};
-
-const handleTriggerEdit = () => {
-  IS_EDITOR_MODE.value = true;
-};
-
-onMounted(() => {
-  document.addEventListener('mousemove', handleMouseMove);
-  document.addEventListener('mouseup', endAction);
-  emitter.on('save', handleTriggerSave);
-  emitter.on('edit', handleTriggerEdit);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('mousemove', handleMouseMove);
-  document.removeEventListener('mouseup', endAction);
-  emitter.off('save', handleTriggerSave);
-  emitter.off('edit', handleTriggerEdit);
 });
 
 const triggerFileInput = () => {
@@ -734,14 +688,15 @@ const handleEditNote = (newText: string, newColor: string) => {
   closeModals();
 };
 
-const handleReactionChange = (selection: Selection, emoji: string, isAdded: boolean) => {
-  console.log('Selection:', selection);
-  if (isAdded) {
-    console.log(`Add reaction ${emoji}`);
-  } else {
-    console.log(`Remove reaction ${emoji}`);
-  }
-};
+onMounted(() => {
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', endAction);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleMouseMove);
+  document.removeEventListener('mouseup', endAction);
+});
 </script>
 
 <style scoped>
@@ -753,53 +708,9 @@ const handleReactionChange = (selection: Selection, emoji: string, isAdded: bool
   opacity: 0.5;
   pointer-events: none;
 }
+
 .controls.is-adding .selection-box.is-current {
   opacity: 1;
   pointer-events: none;
-}
-
-.tooltip.tooltip-left {
-  left: 50%;
-}
-
-.tooltip.tooltip-right {
-  right: 50%;
-}
-
-.tooltip.tooltip-bottom {
-  top: 110%;
-}
-
-.tooltip.tooltip-top {
-  bottom: 110%;
-}
-
-.tooltip:after {
-  content: '';
-  display: block;
-  width: 0;
-  height: 0;
-  position: absolute;
-  border: 5px solid transparent;
-}
-.tooltip.tooltip-top.tooltip-left:after {
-  border-top-color: #ff6900;
-  left: 20px;
-  bottom: -12px;
-}
-.tooltip.tooltip-top.tooltip-right:after {
-  border-top-color: #ff6900;
-  right: 20px;
-  bottom: -12px;
-}
-.tooltip.tooltip-bottom.tooltip-left:after {
-  border-bottom-color: #ff6900;
-  left: 20px;
-  top: -12px;
-}
-.tooltip.tooltip-bottom.tooltip-right:after {
-  border-bottom-color: #ff6900;
-  right: 20px;
-  top: -12px;
 }
 </style>
