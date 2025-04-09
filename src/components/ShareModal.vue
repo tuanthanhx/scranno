@@ -1,27 +1,103 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 bg-black/50 flex items-center justify-center z-20000">
-    <div class="bg-white p-6 rounded-lg w-full max-w-md">
-      <div>
-        <h3>SHARE</h3>
-        <p>https://example.com/abcd1234</p>
-      </div>
-      <div class="flex justify-end gap-2 mt-4">
+    <div class="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl relative">
+      <!-- Close Button -->
+      <button
+        @click="close"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+        title="Close"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
+      <!-- Heading -->
+      <h3 class="text-xl font-bold text-gray-800 mb-4">Ready to Share</h3>
+
+      <!-- Share Section -->
+      <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <input
+          type="text"
+          :value="link"
+          readonly
+          class="flex-1 p-2 bg-transparent border-none focus:outline-none text-gray-700"
+        />
         <button
-          @click="close"
-          class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors cursor-pointer"
+          @click="copyToClipboard"
+          class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1 cursor-pointer"
+          title="Copy to clipboard"
         >
-          Close
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"
+            />
+          </svg>
+          <span class="text-sm">Copy</span>
         </button>
+      </div>
+
+      <div class="mt-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg flex items-center gap-2">
+        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p>
+          This board expires in {{ expirationDays }} day{{expirationDays > 1 ? 's': ''}} on
+          <span class="font-medium text-gray-800">{{ expirationTime }}</span>
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 
 defineProps<{
   isOpen: boolean;
 }>();
+
+const link = ref('https://scranno.com/snT4GCX'); // @TODO: Dummy
+const expirationDate = ref('2025-04-13T10:03:48.227Z'); // @TODO: Dummy
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(link.value);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
+};
+
+// Computed property for expiration days
+const expirationDays = computed(() => {
+  const now = new Date();
+  const expiry = new Date(expirationDate.value);
+  const diffTime = expiry.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+});
+
+// Computed property for formatted expiration date
+const expirationTime = computed(() => {
+  const expiry = new Date(expirationDate.value);
+  return expiry.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+});
 
 const emit = defineEmits<{
   (e: 'close'): void;

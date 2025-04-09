@@ -1,4 +1,5 @@
 <template>
+  <SpinnerLoading :is-visible="isLoading" />
   <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
     <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
@@ -210,6 +211,7 @@ import { BoardService } from '@/services/boardService';
 import { emitter } from '@/utils/eventBus';
 import { scrollToElement, selectNote } from '@/utils/utils';
 import { useNavigation } from '@/utils/useNavigation';
+import SpinnerLoading from '@/components/SpinnerLoading.vue';
 import ConfirmationModal from '@/components/ConfirmationModal.vue';
 import EditScreenModal from '@/components/EditScreenModal.vue';
 import EditNoteModal from '@/components/EditNoteModal.vue';
@@ -220,6 +222,8 @@ import type { Screen, Selection } from '@/types';
 
 const boardService = new BoardService();
 const { navigateTo } = useNavigation();
+
+const isLoading = ref(false);
 
 const screens = ref<Screen[]>([]);
 const screensContainer = ref<HTMLElement | null>(null);
@@ -689,14 +693,19 @@ const handleTriggerSave = () => {
 };
 
 const handleSaveBoard = async (boardName: string) => {
-  const response = await boardService.createBoard({
-    name: boardName,
-    screens: JSON.parse(JSON.stringify(screens.value)),
-  });
-  if (response.status === 200) {
-    navigateTo({ path: `/boards/${response.data.id}`, query: { sharing: true } });
-  } else {
-    console.error('Failed to save the board');
+  isLoading.value = true;
+  try {
+    const response = await boardService.createBoard({
+      name: boardName,
+      screens: JSON.parse(JSON.stringify(screens.value)),
+    });
+    if (response) {
+      navigateTo({ path: `/boards/${response.data.id}`, query: { sharing: true } });
+    }
+  } catch (error) {
+    console.error('Error saving the board:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 

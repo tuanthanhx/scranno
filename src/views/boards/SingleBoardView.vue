@@ -1,12 +1,5 @@
 <template>
-  <div
-    v-if="isLoading"
-    class="loading-overlay fixed top-0 left-0 w-full h-full bg-white flex items-center justify-center z-[30000]"
-  >
-    <div
-      class="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"
-    ></div>
-  </div>
+  <SpinnerLoading :is-visible="isLoading" />
   <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
     <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
@@ -113,6 +106,7 @@ import { BoardService } from '@/services/boardService';
 import { scrollToElement, selectNote } from '@/utils/utils';
 import { useNavigation } from '@/utils/useNavigation';
 import MessageWithReactions from '@/components/MessageWithReactions.vue';
+import SpinnerLoading from '@/components/SpinnerLoading.vue';
 import ShareModal from '@/components/ShareModal.vue';
 import type { Screen, Selection } from '@/types';
 
