@@ -700,7 +700,7 @@ const handleSaveBoard = async (boardName: string) => {
       screens: JSON.parse(JSON.stringify(screens.value)),
     });
     if (response) {
-      navigateTo({ path: `/boards/${response.data.id}`, query: { sharing: true } });
+      navigateTo({ path: `/boards/${response.data.id}`, query: { sharing: 'true' } });
     }
   } catch (error) {
     console.error('Error saving the board:', error);

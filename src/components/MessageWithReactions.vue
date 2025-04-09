@@ -1,6 +1,6 @@
 <template>
   <div class="relative group">
-    <div>
+    <div @click="emit('clicked-on-message')">
       {{ message || '&nbsp;' }}
     </div>
     <div
@@ -9,7 +9,7 @@
       @mouseleave="handleMouseLeave"
     >
       <button
-        class="text-xl hover:scale-125 transition-transform"
+        class="text-xl hover:scale-125 transition-transform cursor-pointer"
         title="Click to add"
         @click="toggleReaction(EMOJI_DEFAULT)"
       >
@@ -24,7 +24,7 @@
             v-for="emoji in EMOJI_LIST"
             :key="emoji"
             :class="[
-              'text-lg transition-transform hover:scale-125 hover:opacity-100 hover:grayscale-0',
+              'text-lg transition-transform hover:scale-125 hover:opacity-100 hover:grayscale-0 cursor-pointer',
               reactions.has(emoji) ? 'opacity-100 grayscale-0' : 'opacity-25 grayscale',
             ]"
             :title="reactions.has(emoji) ? 'Click to remove' : 'Click to add'"
@@ -40,7 +40,7 @@
       <button
         v-for="emoji in reactions"
         :key="emoji"
-        class="text-lg"
+        class="text-lg transition-transform hover:scale-125 hover:grayscale cursor-pointer"
         title="Click to remove"
         @click="toggleReaction(emoji)"
       >
@@ -60,6 +60,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'reaction-changed', emoji: string, isAdded: boolean): void;
+  (e: 'clicked-on-message'): void;
 }>();
 
 const EMOJI_DEFAULT = '👍';

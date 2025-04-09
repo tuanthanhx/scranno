@@ -17,7 +17,7 @@
                 v-for="(selection, sIndex) in screen.selections"
                 :key="sIndex"
                 :data-sidebar-item-id="selection.id"
-                class="flex p-2"
+                class="flex p-2 hover:bg-yellow-50"
               >
                 <div
                   class="w-6 h-6 mr-3 relative top-0.5 flex justify-center content-center items-center rounded-full text-xs font-bold cursor-pointer"
@@ -31,6 +31,7 @@
                     <MessageWithReactions
                       :message="selection.msg"
                       :initial-reactions="selection.reactions"
+                      @clicked-on-message="scrollToElement(selection.id)"
                       @reaction-changed="
                         (emoji: string, isAdded: boolean) =>
                           handleReactionChange(selection, emoji, isAdded)
@@ -213,7 +214,7 @@ onMounted(() => {
   }
   if (route.query.sharing === 'true') {
     modalState.showShareBoardModal = true;
-    navigateTo(`/boards/${route.params.id}`, { replace: true });
+    navigateTo(`/boards/${route.params.id}`, true);
   }
   fetchBoard();
 });

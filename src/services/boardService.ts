@@ -69,7 +69,7 @@ export class BoardService extends ApiService {
           selections: [
             {
               id: 'sel_004',
-              number: 1,
+              number: 4,
               x: 100,
               y: 50,
               width: 300,
@@ -80,7 +80,7 @@ export class BoardService extends ApiService {
             },
             {
               id: 'sel_005',
-              number: 2,
+              number: 5,
               x: 500,
               y: 400,
               width: 250,
@@ -91,7 +91,7 @@ export class BoardService extends ApiService {
             },
             {
               id: 'sel_006',
-              number: 3,
+              number: 6,
               x: 1000,
               y: 500,
               width: 100,
