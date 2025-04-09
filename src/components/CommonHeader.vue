@@ -26,12 +26,13 @@
         <div class="flex items-center space-x-8">
           <div class="text-sm relative group cursor-default">
             Expires in:
-            <span class="font-semibold">
+            <span class="font-semibold relative">
               {{ expirationDays }} days
               <span
-                class="absolute left-1/2 transform -translate-x-1/2 -top-4.5 mb-2 hidden group-hover:block bg-gray-900/80 text-white text-xs rounded py-1 px-2 whitespace-nowrap"
+                class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap"
               >
                 {{ expirationTime }}
+                <span class="absolute border-6 border-transparent bottom-full left-1/2 transform -translate-x-1/2 border-b-gray-800"></span>
               </span>
             </span>
           </div>
