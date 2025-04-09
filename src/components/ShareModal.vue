@@ -36,15 +36,13 @@
           >
             <span class="text-sm">Copy</span>
           </button>
-          <div
+          <PopOver
             v-if="showPopover"
-            class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 text-white text-xs rounded-md px-3 py-1.5 shadow-lg"
-          >
-            Copied!
-            <div
-              class="absolute top-full left-1/2 transform -translate-x-1/2 border-6 border-transparent border-t-gray-800"
-            ></div>
-          </div>
+            message="Copied!"
+            position="top"
+            :duration="1000"
+            @hide="showPopover = false"
+          />
         </div>
       </div>
 
@@ -68,6 +66,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import PopOver from '@/components/PopOver.vue';
 
 defineProps<{
   isOpen: boolean;
@@ -81,9 +80,6 @@ const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(link.value);
     showPopover.value = true;
-    setTimeout(() => {
-      showPopover.value = false;
-    }, 1000);
   } catch (err) {
     console.error('Failed to copy:', err);
   }

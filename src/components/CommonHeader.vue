@@ -39,15 +39,13 @@
             <div>{{ link }}</div>
             <div class="relative">
               <DocumentDuplicateIcon class="w-5 h-5 text-gray-500 hover:text-gray-700" />
-              <div
+              <PopOver
                 v-if="showPopover"
-                class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-800 text-white text-xs rounded-md px-3 py-1.5 shadow-lg"
-              >
-                Copied!
-                <div
-                  class="absolute bottom-full left-1/2 transform -translate-x-1/2 border-6 border-transparent border-b-gray-800"
-                ></div>
-              </div>
+                message="Copied!"
+                position="bottom"
+                :duration="1000"
+                @hide="showPopover = false"
+              />
             </div>
           </div>
           <button
@@ -80,6 +78,7 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { emitter } from '@/utils/eventBus';
 import { useNavigation } from '@/utils/useNavigation';
+import PopOver from '@/components/PopOver.vue';
 import LogoIcon from '@/components/icons/IconLogo.vue';
 import { DocumentDuplicateIcon } from '@heroicons/vue/24/solid';
 
@@ -94,9 +93,6 @@ const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(link.value);
     showPopover.value = true;
-    setTimeout(() => {
-      showPopover.value = false;
-    }, 1000);
   } catch (err) {
     console.error('Failed to copy:', err);
   }
