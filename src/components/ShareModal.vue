@@ -28,29 +28,37 @@
           readonly
           class="flex-1 p-2 bg-transparent border-none focus:outline-none text-gray-700"
         />
-        <button
-          @click="copyToClipboard"
-          class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1 cursor-pointer"
-          title="Copy to clipboard"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"
-            />
-          </svg>
-          <span class="text-sm">Copy</span>
-        </button>
+        <div class="relative">
+          <button
+            @click="copyToClipboard"
+            class="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center gap-1 cursor-pointer"
+            title="Copy to clipboard"
+          >
+            <span class="text-sm">Copy</span>
+          </button>
+          <div
+            v-if="showPopover"
+            class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 text-white text-xs rounded-md px-3 py-1.5 shadow-lg"
+          >
+            Copied!
+            <div
+              class="absolute top-full left-1/2 transform -translate-x-1/2 border-6 border-transparent border-t-gray-800"
+            ></div>
+          </div>
+        </div>
       </div>
 
       <div class="mt-4 text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg flex items-center gap-2">
         <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
         <p>
-          This board expires in {{ expirationDays }} day{{expirationDays > 1 ? 's': ''}} on
+          This board expires in {{ expirationDays }} day{{ expirationDays > 1 ? 's' : '' }} on
           <span class="font-medium text-gray-800">{{ expirationTime }}</span>
         </p>
       </div>
@@ -67,10 +75,15 @@ defineProps<{
 
 const link = ref('https://scranno.com/snT4GCX'); // @TODO: Dummy
 const expirationDate = ref('2025-04-13T10:03:48.227Z'); // @TODO: Dummy
+const showPopover = ref(false);
 
 const copyToClipboard = async () => {
   try {
     await navigator.clipboard.writeText(link.value);
+    showPopover.value = true;
+    setTimeout(() => {
+      showPopover.value = false;
+    }, 1000);
   } catch (err) {
     console.error('Failed to copy:', err);
   }
