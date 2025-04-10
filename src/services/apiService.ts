@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosResponse, AxiosProgressEvent } from 'axios';
 import type { ApiResponse } from '@/types';
 
 export class ApiService {
@@ -22,7 +22,7 @@ export class ApiService {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     this.api.interceptors.response.use(
@@ -33,7 +33,7 @@ export class ApiService {
           return Promise.reject(new Error(message));
         }
         return Promise.reject(new Error('An unexpected error occurred'));
-      }
+      },
     );
   }
 
@@ -57,8 +57,8 @@ export class ApiService {
     endpoint: string,
     formData: FormData,
     config: {
-      onUploadProgress?: (progressEvent: ProgressEvent) => void
-    } = {}
+      onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
+    } = {},
   ): Promise<ApiResponse<T>> {
     const response: AxiosResponse<T> = await this.api.post(endpoint, formData, {
       headers: {
@@ -84,8 +84,8 @@ export class ApiService {
     endpoint: string,
     formData: FormData,
     config: {
-      onUploadProgress?: (progressEvent: ProgressEvent) => void
-    } = {}
+      onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
+    } = {},
   ): Promise<ApiResponse<T>> {
     const response: AxiosResponse<T> = await this.api.put(endpoint, formData, {
       headers: {

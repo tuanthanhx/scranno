@@ -90,7 +90,7 @@
               </div>
               <div class="relative select-none">
                 <img
-                  :ref="(el) => (imageRefs[screen.id] = el)"
+                  :ref="el => (imageRefs[screen.id] = el as HTMLImageElement | null)"
                   :src="screen.imageUrl"
                   :width="screen.width"
                   :height="screen.height"

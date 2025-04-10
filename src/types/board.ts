@@ -14,7 +14,7 @@ export interface Screen {
   id: string;
   title: string;
   imageUrl: string;
-  file: File | null;
+  file?: File | null;
   width: number;
   height: number;
   addingRectangle: boolean;
