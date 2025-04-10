@@ -53,8 +53,46 @@ export class ApiService {
     };
   }
 
+  protected async postForm<T>(
+    endpoint: string,
+    formData: FormData,
+    config: {
+      onUploadProgress?: (progressEvent: ProgressEvent) => void
+    } = {}
+  ): Promise<ApiResponse<T>> {
+    const response: AxiosResponse<T> = await this.api.post(endpoint, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: config.onUploadProgress,
+    });
+    return {
+      data: response.data,
+      status: response.status,
+    };
+  }
+
   protected async put<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
     const response: AxiosResponse<T> = await this.api.put(endpoint, data);
+    return {
+      data: response.data,
+      status: response.status,
+    };
+  }
+
+  protected async putForm<T>(
+    endpoint: string,
+    formData: FormData,
+    config: {
+      onUploadProgress?: (progressEvent: ProgressEvent) => void
+    } = {}
+  ): Promise<ApiResponse<T>> {
+    const response: AxiosResponse<T> = await this.api.put(endpoint, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: config.onUploadProgress,
+    });
     return {
       data: response.data,
       status: response.status,

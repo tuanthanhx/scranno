@@ -361,7 +361,7 @@ const processFile = async (file: File) => {
       newWidth = MAX_FILE_WIDTH;
       newHeight = Math.round((MAX_FILE_WIDTH / width) * height);
     }
-    const screen = createScreen(imageUrl, newWidth, newHeight);
+    const screen = createScreen(imageUrl, file, newWidth, newHeight);
     screens.value.push(screen);
     if (imageInput.value) {
       imageInput.value.value = '';
@@ -372,11 +372,12 @@ const processFile = async (file: File) => {
   }
 };
 
-const createScreen = (imageUrl: string, width: number, height: number): Screen => ({
+const createScreen = (imageUrl: string, file: File | Blob, width: number, height: number): Screen => ({
   id: uuidv4(),
   title: 'Untitled',
   index: screens.value.length,
   imageUrl,
+  file,
   width,
   height,
   status: 'new',
@@ -697,7 +698,7 @@ const handleSaveBoard = async (boardName: string) => {
   try {
     const response = await boardService.createBoard({
       name: boardName,
-      screens: JSON.parse(JSON.stringify(screens.value)),
+      screens: screens.value,
     });
     if (response) {
       navigateTo({ path: `/boards/${response.data.id}`, query: { sharing: 'true' } });
