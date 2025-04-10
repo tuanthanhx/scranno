@@ -415,7 +415,6 @@ const findScreen = (target: HTMLElement): Screen | undefined => {
 const startAction = (e: MouseEvent) => {
   const target = e.target as HTMLElement;
   const screen = findScreen(target);
-  console.log(screen);
   if (!screen) return;
 
   if (target.classList.contains('resize-handle')) return;
