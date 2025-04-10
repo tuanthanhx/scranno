@@ -49,11 +49,11 @@
               />
             </div>
           </div>
-          <button
+          <!-- <button
             class="inline-block min-w-[100px] bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 cursor-pointer"
           >
             Edit
-          </button>
+          </button> -->
         </div>
       </template>
       <template v-else>
