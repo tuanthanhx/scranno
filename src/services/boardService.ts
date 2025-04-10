@@ -105,7 +105,6 @@ export class BoardService extends ApiService {
     return Promise.resolve({
       data: mockData,
       status: 200,
-      message: 'success',
     });
   }
 
