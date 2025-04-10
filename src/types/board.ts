@@ -13,7 +13,6 @@ export interface Selection {
 export interface Screen {
   id: string;
   title: string;
-  index: number;
   imageUrl: string;
   file: File | null;
   width: number;

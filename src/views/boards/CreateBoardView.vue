@@ -5,7 +5,7 @@
       <div
         class="sidebar-inner fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
-        <div v-for="(screen, index) in screens" :key="index" :data-index="index">
+        <div v-for="screen in screens" :key="screen.id" :data-id="screen.id">
           <div class="group relative font-bold mb-5 text-center bg-orange-200 leading-5">
             <div class="p-4 cursor-pointer" @click="scrollToElement(screen.id)">
               {{ screen.title || 'Untitled' }}
@@ -26,8 +26,8 @@
           <div class="px-2">
             <ul class="space-y-4">
               <li
-                v-for="(selection, sIndex) in screen.selections"
-                :key="sIndex"
+                v-for="selection in screen.selections"
+                :key="selection.id"
                 :data-sidebar-item-id="selection.id"
                 class="flex p-2"
               >
@@ -40,7 +40,9 @@
                 </div>
                 <div class="flex-1 group">
                   <div class="whitespace-pre-wrap">
-                    <div>{{ selection.msg || '&nbsp;' }}</div>
+                    <div @click="scrollToElement(selection.id)">
+                      {{ selection.msg || '&nbsp;' }}
+                    </div>
                   </div>
                   <div class="mt-2 opacity-50 group-hover:opacity-100">
                     <div class="flex justify-end space-x-3">
@@ -73,10 +75,10 @@
           @dragstart.prevent
         >
           <div
-            v-for="(screen, index) in screens"
-            :key="index"
+            v-for="screen in screens"
+            :key="screen.id"
+            :data-id="screen.id"
             class="screen-container"
-            :data-index="index"
           >
             <div
               class="controls"
@@ -88,15 +90,15 @@
               </div>
               <div class="relative select-none">
                 <img
-                  ref="imageRefs"
+                  :ref="(el) => (imageRefs[screen.id] = el)"
                   :src="screen.imageUrl"
                   :width="screen.width"
                   :height="screen.height"
                   class="target-image bg-white shadow-md"
                 />
                 <div
-                  v-for="(selection, sIndex) in screen.selections"
-                  :key="sIndex"
+                  v-for="selection in screen.selections"
+                  :key="selection.id"
                   class="selection-box group absolute border-2 hover:z-[10000] bg-black/10 cursor-move rounded-md"
                   :class="{ 'is-current': selection.id === state.currentBox?.id }"
                   :style="selectionStyle(selection)"
@@ -232,7 +234,7 @@ const imageInput = ref<HTMLInputElement | null>(null);
 const dropZone = ref<HTMLElement | null>(null);
 const isDragging = ref(false);
 
-const imageRefs = ref<HTMLImageElement[]>([]);
+const imageRefs = ref<Record<string, HTMLImageElement | null>>({});
 
 const adjustTooltipPosition = (event: MouseEvent) => {
   const note = event.currentTarget as HTMLElement;
@@ -373,7 +375,6 @@ const processFile = async (file: File) => {
 const createScreen = (imageUrl: string, file: File, width: number, height: number): Screen => ({
   id: uuidv4(),
   title: 'Untitled',
-  index: screens.value.length,
   imageUrl,
   file,
   width,
@@ -408,12 +409,13 @@ const findScreen = (target: HTMLElement): Screen | undefined => {
   while (element && !element.classList.contains('screen-container')) {
     element = element.parentElement as HTMLElement;
   }
-  return screens.value.find((s) => s.index === Number(element?.dataset.index));
+  return screens.value.find((s) => s.id === element?.dataset.id);
 };
 
 const startAction = (e: MouseEvent) => {
   const target = e.target as HTMLElement;
   const screen = findScreen(target);
+  console.log(screen);
   if (!screen) return;
 
   if (target.classList.contains('resize-handle')) return;
@@ -443,7 +445,7 @@ const startResize = (e: MouseEvent, screen: Screen, selection: Selection, corner
   state.resizeHandle = corner;
   state.currentBox = selection;
   state.currentScreen = screen;
-  const rect = imageRefs.value[screen.index]?.getBoundingClientRect();
+  const rect = imageRefs.value[screen.id]?.getBoundingClientRect();
   if (rect) {
     state.startX = e.clientX - rect.left;
     state.startY = e.clientY - rect.top;
@@ -455,7 +457,7 @@ const startMove = (e: MouseEvent, screen: Screen, selection: Selection) => {
   state.isMoving = true;
   state.currentBox = selection;
   state.currentScreen = screen;
-  const rect = imageRefs.value[screen.index]?.getBoundingClientRect();
+  const rect = imageRefs.value[screen.id]?.getBoundingClientRect();
   if (state.currentBox && rect) {
     state.startX = e.clientX - rect.left - state.currentBox.x;
     state.startY = e.clientY - rect.top - state.currentBox.y;
@@ -472,7 +474,7 @@ const handleMouseMove = (e: MouseEvent) => {
 
 const drawSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return;
-  const rect = imageRefs.value[state.currentScreen.index]?.getBoundingClientRect();
+  const rect = imageRefs.value[state.currentScreen?.id]?.getBoundingClientRect();
   if (rect) {
     const currentX = Math.max(0, Math.min(e.clientX - rect.left, state.currentScreen.width));
     const currentY = Math.max(0, Math.min(e.clientY - rect.top, state.currentScreen.height));
@@ -486,7 +488,7 @@ const drawSelection = (e: MouseEvent) => {
 
 const resizeSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return;
-  const rect = imageRefs.value[state.currentScreen.index]?.getBoundingClientRect();
+  const rect = imageRefs.value[state.currentScreen?.id]?.getBoundingClientRect();
   if (rect) {
     const currentX = Math.max(0, Math.min(e.clientX - rect.left, state.currentScreen.width));
     const currentY = Math.max(0, Math.min(e.clientY - rect.top, state.currentScreen.height));
@@ -519,7 +521,7 @@ const resizeSelection = (e: MouseEvent) => {
 
 const moveSelection = (e: MouseEvent) => {
   if (!state.currentBox || !state.currentScreen) return;
-  const rect = imageRefs.value[state.currentScreen.index]?.getBoundingClientRect();
+  const rect = imageRefs.value[state.currentScreen?.id]?.getBoundingClientRect();
   if (rect) {
     const newX = Math.max(
       0,
