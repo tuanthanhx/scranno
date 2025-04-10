@@ -273,11 +273,9 @@ const state = reactive({
 
 const highestSelectionNumber = computed(() => {
   if (screens.value.length === 0) return 0;
-
   const allNumbers = screens.value
     .flatMap((screen) => screen.selections)
     .map((selection) => selection.number);
-
   return allNumbers.length > 0 ? Math.max(...allNumbers) : 0;
 });
 
@@ -372,7 +370,7 @@ const processFile = async (file: File) => {
   }
 };
 
-const createScreen = (imageUrl: string, file: File | Blob, width: number, height: number): Screen => ({
+const createScreen = (imageUrl: string, file: File, width: number, height: number): Screen => ({
   id: uuidv4(),
   title: 'Untitled',
   index: screens.value.length,
@@ -380,7 +378,6 @@ const createScreen = (imageUrl: string, file: File | Blob, width: number, height
   file,
   width,
   height,
-  status: 'new',
   addingRectangle: false,
   selections: [],
 });
@@ -693,11 +690,11 @@ const handleTriggerSave = () => {
   openSaveBoardModal();
 };
 
-const handleSaveBoard = async (boardName: string) => {
+const handleSaveBoard = async (boardTitle: string) => {
   isLoading.value = true;
   try {
     const response = await boardService.createBoard({
-      name: boardName,
+      title: boardTitle,
       screens: screens.value,
     });
     if (response) {

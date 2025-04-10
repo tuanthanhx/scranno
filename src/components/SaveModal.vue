@@ -5,8 +5,8 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"> Board Name </label>
           <input
-            ref="inputBoardName"
-            v-model="localBoardName"
+            ref="inputRef"
+            v-model="localBoardTitle"
             type="text"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter board name"
@@ -72,8 +72,8 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const localBoardName = ref('');
-const inputBoardName = ref<HTMLTextAreaElement | null>(null);
+const localBoardTitle = ref('');
+const inputRef = ref<HTMLInputElement | null>(null);
 const formRef = ref<HTMLFormElement | null>(null);
 
 watch(
@@ -81,14 +81,14 @@ watch(
   (newVal) => {
     if (newVal) {
       nextTick(() => {
-        inputBoardName.value?.focus();
+        inputRef.value?.focus();
       });
     }
   },
 );
 
 const handleSave = () => {
-  if (localBoardName.value.trim() === '') {
+  if (localBoardTitle.value.trim() === '') {
     alert('Please enter a board name');
     return;
   }
@@ -96,7 +96,7 @@ const handleSave = () => {
 };
 
 const save = () => {
-  emit('save', localBoardName.value.trim());
+  emit('save', localBoardTitle.value.trim());
   emit('close');
 };
 
@@ -104,7 +104,7 @@ const close = () => {
   if (formRef.value) {
     formRef.value.reset();
   }
-  localBoardName.value = '';
+  localBoardTitle.value = '';
   emit('close');
 };
 </script>

@@ -15,16 +15,15 @@ export interface Screen {
   title: string;
   index: number;
   imageUrl: string;
-  file?: File;
+  file: File | null;
   width: number;
   height: number;
   addingRectangle: boolean;
-  status: string;
   selections: Selection[];
 }
 
 export interface Board {
   id: string;
-  name: string;
+  title: string;
   screens: Screen[];
 }
