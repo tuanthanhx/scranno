@@ -99,6 +99,14 @@ export class ApiService {
     };
   }
 
+  protected async patch<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
+    const response: AxiosResponse<T> = await this.api.patch(endpoint, data);
+    return {
+      data: response.data,
+      status: response.status,
+    };
+  }
+
   protected async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     const response: AxiosResponse<T> = await this.api.delete(endpoint);
     return {

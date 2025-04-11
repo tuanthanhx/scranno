@@ -49,7 +49,7 @@
                       @clicked-on-message="scrollToElement(selection.id)"
                       @reaction-changed="
                         (emoji: string, isAdded: boolean) =>
-                          handleReactionChange(selection, emoji, isAdded)
+                          handleReactionChange(screen.id, selection.id, emoji, isAdded)
                       "
                     />
                   </div>
@@ -128,6 +128,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useBoardStore } from '@/stores/boardStore';
 import { BoardService } from '@/services/boardService';
 import { scrollToElement, selectNote } from '@/utils/utils';
 import { useNavigation } from '@/utils/useNavigation';
@@ -137,6 +138,8 @@ import ShareModal from '@/components/ShareModal.vue';
 import type { ServerBoard, Selection } from '@/types';
 
 const route = useRoute();
+const boardStore = useBoardStore();
+
 const { navigateTo } = useNavigation();
 
 const boardService = new BoardService();
@@ -206,12 +209,22 @@ const getDynamicStyles = (color: string) => {
   };
 };
 
-const handleReactionChange = (selection: Selection, emoji: string, isAdded: boolean) => {
-  console.log('Selection:', selection);
-  if (isAdded) {
-    console.log(`Add reaction ${emoji}`);
-  } else {
-    console.log(`Remove reaction ${emoji}`);
+const handleReactionChange = async (
+  screenId: string,
+  selectionId: string,
+  emoji: string,
+  isAdded: boolean,
+) => {
+  try {
+    await boardService.updateReaction(
+      board.value?.id as string,
+      screenId,
+      selectionId,
+      emoji,
+      isAdded ? 'add' : 'remove',
+    );
+  } catch (err) {
+    console.error(err);
   }
 };
 
@@ -231,8 +244,9 @@ const fetchBoard = async () => {
   try {
     isLoading.value = true;
     const response = await boardService.getBoard(route.params.id as string);
-    if (response.data?.screens?.length) {
+    if (response.data) {
       board.value = response.data;
+      boardStore.setBoard(response.data);
     }
   } catch (err) {
     console.error(err);

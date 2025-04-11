@@ -23,7 +23,7 @@
         </button>
       </template>
       <template v-else-if="route.name === 'SingleBoard'">
-        <div class="flex items-center space-x-8">
+        <div v-show="link" class="flex items-center space-x-8">
           <div class="text-sm relative group cursor-default">
             Expires in:
             <span class="font-semibold relative">
@@ -32,7 +32,9 @@
                 class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap"
               >
                 {{ expirationTime }}
-                <span class="absolute border-6 border-transparent bottom-full left-1/2 transform -translate-x-1/2 border-b-gray-800"></span>
+                <span
+                  class="absolute border-6 border-transparent bottom-full left-1/2 transform -translate-x-1/2 border-b-gray-800"
+                ></span>
               </span>
             </span>
           </div>
@@ -49,11 +51,12 @@
               />
             </div>
           </div>
-          <!-- <button
+          <button
             class="inline-block min-w-[100px] bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-md transition duration-300 cursor-pointer"
+            @click="navigateTo('/boards/create')"
           >
-            Edit
-          </button> -->
+            New
+          </button>
         </div>
       </template>
       <template v-else>
@@ -75,8 +78,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useBoardStore } from '@/stores/boardStore';
 import { emitter } from '@/utils/eventBus';
 import { useNavigation } from '@/utils/useNavigation';
 import PopOver from '@/components/PopOver.vue';
@@ -84,15 +88,28 @@ import LogoIcon from '@/components/icons/IconLogo.vue';
 import { DocumentDuplicateIcon } from '@heroicons/vue/24/solid';
 
 const route = useRoute();
+const boardStore = useBoardStore();
+
 const { navigateTo } = useNavigation();
 
-const link = ref('https://scranno.com/snT4GCX'); // @TODO: Dummy
-const expirationDate = ref('2025-04-13T10:03:48.227Z'); // @TODO: Dummy
+const link = ref<string | null>(null);
+const boardExpiredAt = ref<string | null>(null);
 const showPopover = ref(false);
+
+watch(
+  () => boardStore.board,
+  (newBoard) => {
+    if (newBoard?.id) {
+      link.value = `${import.meta.env.VITE_APP_URL}/${newBoard.id}`;
+      boardExpiredAt.value = newBoard?.expiredAt;
+    }
+  },
+  { immediate: true },
+);
 
 const copyToClipboard = async () => {
   try {
-    await navigator.clipboard.writeText(link.value);
+    await navigator.clipboard.writeText(link.value as string);
     showPopover.value = true;
   } catch (err) {
     console.error('Failed to copy:', err);
@@ -101,8 +118,9 @@ const copyToClipboard = async () => {
 
 // Computed property for expiration days
 const expirationDays = computed(() => {
+  if (!boardExpiredAt.value) return 0;
   const now = new Date();
-  const expiry = new Date(expirationDate.value);
+  const expiry = new Date(boardExpiredAt.value);
   const diffTime = expiry.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays > 0 ? diffDays : 0;
@@ -110,7 +128,8 @@ const expirationDays = computed(() => {
 
 // Computed property for formatted expiration date
 const expirationTime = computed(() => {
-  const expiry = new Date(expirationDate.value);
+  if (!boardExpiredAt.value) return '';
+  const expiry = new Date(boardExpiredAt.value);
   return expiry.toLocaleString('en-US', {
     year: 'numeric',
     month: 'long',

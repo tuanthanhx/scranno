@@ -30,4 +30,17 @@ export class BoardService extends ApiService {
   async deleteBoard(id: string): Promise<ApiResponse<null>> {
     return this.delete<null>(`/boards/${id}`);
   }
+
+  async updateReaction(
+    id: string,
+    screenId: string,
+    selectionId: string,
+    reaction: string,
+    action: 'add' | 'remove',
+  ): Promise<ApiResponse<null>> {
+    return this.patch<null>(`/boards/${id}/screens/${screenId}/selections/${selectionId}/reactions`, {
+      reaction,
+      action,
+    });
+  }
 }

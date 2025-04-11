@@ -80,7 +80,7 @@ const showPopover = ref(false);
 
 const copyToClipboard = async () => {
   try {
-    await navigator.clipboard.writeText(link.value);
+    await navigator.clipboard.writeText(link.value as string);
     showPopover.value = true;
   } catch (err) {
     console.error('Failed to copy:', err);
