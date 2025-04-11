@@ -69,8 +69,8 @@
             class="screen-container"
             :data-index="index"
           >
-            <div class="controls" :data-id="screen.id">
-              <div class="mb-2 font-bold">
+            <div class="controls flex flex-wrap items-center justify-center" :data-id="screen.id">
+              <div class="mb-2 font-bold w-full text-center">
                 {{ screen.title || 'Untitled' }}
               </div>
               <div class="relative select-none">

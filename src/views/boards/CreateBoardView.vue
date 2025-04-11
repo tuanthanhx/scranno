@@ -81,11 +81,11 @@
             class="screen-container"
           >
             <div
-              class="controls"
+              class="controls flex flex-wrap items-center justify-center"
               :class="{ 'is-adding': screen.addingRectangle }"
               :data-id="screen.id"
             >
-              <div class="mb-2 font-bold">
+              <div class="mb-2 font-bold w-full text-center">
                 {{ screen.title || 'Untitled' }}
               </div>
               <div class="relative select-none">
