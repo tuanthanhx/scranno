@@ -247,6 +247,7 @@ const fetchBoard = async () => {
     if (response.data) {
       board.value = response.data;
       boardStore.setBoard(response.data);
+      document.title = `${response.data.title || 'Board Details'} | Scranno`;
     }
   } catch (err) {
     console.error(err);
