@@ -1,11 +1,26 @@
 <template>
   <SpinnerLoading :is-visible="isLoading" />
-  <div class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex">
+  <div
+    v-if="!board"
+    class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex items-center justify-center"
+  >
+    Board Not Found
+  </div>
+  <div
+    v-if="isBoardExpired"
+    class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex items-center justify-center"
+  >
+    Board Expired
+  </div>
+  <div
+    v-else-if="board && board.screens?.length"
+    class="bg-gray-100 min-h-screen w-full min-w-[1520px] flex"
+  >
     <aside class="flex-[300px_0_0] relative z-[9000]">
       <div
         class="sidebar-inner fixed top-0 left-0 w-[300px] pt-[60px] h-screen overflow-x-hidden overflow-y-auto bg-white shadow-md space-y-10"
       >
-        <div v-for="(screen, index) in screens" :key="index" :data-index="index">
+        <div v-for="(screen, index) in board.screens" :key="index" :data-index="index">
           <div class="group relative font-bold mb-5 text-center bg-orange-200 leading-5">
             <div class="p-4 cursor-pointer" @click="scrollToElement(screen.id)">
               {{ screen.title || 'Untitled' }}
@@ -49,7 +64,7 @@
       <div class="mx-auto w-full max-w-[1200px] pb-8">
         <div id="screens" class="space-y-10 py-5">
           <div
-            v-for="(screen, index) in screens"
+            v-for="(screen, index) in board.screens"
             :key="index"
             class="screen-container"
             :data-index="index"
@@ -63,12 +78,19 @@
                   :src="screen.imageUrl"
                   :width="screen.width"
                   :height="screen.height"
-                  class="target-image bg-white shadow-md"
+                  class="target-image shadow-md relative z-10"
                 />
+                <div
+                  class="absolute top-0 left-0 w-full h-full bg-black/5 flex items-center justify-center z-0"
+                >
+                  <div
+                    class="w-6 h-6 border-4 border-orange-500/50 border-t-transparent rounded-full animate-spin"
+                  ></div>
+                </div>
                 <div
                   v-for="(selection, sIndex) in screen.selections"
                   :key="sIndex"
-                  class="selection-box group absolute border-2 hover:z-[10000] bg-black/10 rounded-md"
+                  class="selection-box group absolute border-2 z-[1000] hover:z-[10000] bg-black/10 rounded-md"
                   :style="selectionStyle(selection)"
                   :data-id="selection.id"
                   data-type="note"
@@ -95,13 +117,16 @@
     </main>
     <ShareModal
       :is-open="modalState.showShareBoardModal"
+      :boardId="board.id"
+      :boardTitle="board.title"
+      :boardExpiredAt="board.expiredAt"
       @close="closeModals"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { BoardService } from '@/services/boardService';
 import { scrollToElement, selectNote } from '@/utils/utils';
@@ -109,7 +134,7 @@ import { useNavigation } from '@/utils/useNavigation';
 import MessageWithReactions from '@/components/MessageWithReactions.vue';
 import SpinnerLoading from '@/components/SpinnerLoading.vue';
 import ShareModal from '@/components/ShareModal.vue';
-import type { Screen, Selection } from '@/types';
+import type { ServerBoard, Selection } from '@/types';
 
 const route = useRoute();
 const { navigateTo } = useNavigation();
@@ -118,7 +143,16 @@ const boardService = new BoardService();
 
 const isLoading = ref(false);
 
-const screens = ref<Screen[]>([]);
+const board = ref<ServerBoard | null>(null);
+
+const isBoardExpired = computed(() => {
+  if (!board.value) {
+    return true;
+  }
+  const expiredAtDate = new Date(board.value?.expiredAt);
+  const now = new Date();
+  return expiredAtDate <= now;
+});
 
 const adjustTooltipPosition = (event: MouseEvent) => {
   const note = event.currentTarget as HTMLElement;
@@ -198,7 +232,7 @@ const fetchBoard = async () => {
     isLoading.value = true;
     const response = await boardService.getBoard(route.params.id as string);
     if (response.data?.screens?.length) {
-      screens.value = response.data.screens;
+      board.value = response.data;
     }
   } catch (err) {
     console.error(err);

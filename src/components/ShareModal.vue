@@ -68,12 +68,14 @@
 import { ref, computed } from 'vue';
 import PopOver from '@/components/PopOver.vue';
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
+  boardId: string;
+  boardTitle: string;
+  boardExpiredAt: string;
 }>();
 
-const link = ref('https://scranno.com/snT4GCX'); // @TODO: Dummy
-const expirationDate = ref('2025-04-13T10:03:48.227Z'); // @TODO: Dummy
+const link = ref(`${import.meta.env.VITE_APP_URL}/${props.boardId}`);
 const showPopover = ref(false);
 
 const copyToClipboard = async () => {
@@ -88,7 +90,7 @@ const copyToClipboard = async () => {
 // Computed property for expiration days
 const expirationDays = computed(() => {
   const now = new Date();
-  const expiry = new Date(expirationDate.value);
+  const expiry = new Date(props.boardExpiredAt);
   const diffTime = expiry.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays > 0 ? diffDays : 0;
@@ -96,7 +98,7 @@ const expirationDays = computed(() => {
 
 // Computed property for formatted expiration date
 const expirationTime = computed(() => {
-  const expiry = new Date(expirationDate.value);
+  const expiry = new Date(props.boardExpiredAt);
   return expiry.toLocaleString('en-US', {
     year: 'numeric',
     month: 'long',

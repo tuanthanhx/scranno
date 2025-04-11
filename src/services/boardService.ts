@@ -1,16 +1,16 @@
 import { ApiService } from '@/services/apiService';
-import type { ApiResponse, Board } from '@/types';
+import type { ApiResponse, ServerBoard, Board } from '@/types';
 
 export class BoardService extends ApiService {
-  async getBoards(): Promise<ApiResponse<Board[]>> {
-    return this.get<Board[]>('/api/v1/boards');
+  async getBoards(): Promise<ApiResponse<ServerBoard[]>> {
+    return this.get<ServerBoard[]>('/boards');
   }
 
-  async getBoard(id: string): Promise<ApiResponse<Board>> {
-    return this.get<Board>(`/api/v1/boards/${id}`);
+  async getBoard(id: string): Promise<ApiResponse<ServerBoard>> {
+    return this.get<ServerBoard>(`/boards/${id}`);
   }
 
-  async createBoard(boardData: Partial<Board>): Promise<ApiResponse<Partial<Board>>> {
+  async createBoard(boardData: Partial<Board>): Promise<ApiResponse<Partial<ServerBoard>>> {
     const formData = new FormData();
     formData.append('board', JSON.stringify(boardData));
     if (boardData.screens && boardData.screens.length > 0) {
@@ -20,14 +20,14 @@ export class BoardService extends ApiService {
         }
       });
     }
-    return this.postForm<Board>('/api/v1/boards', formData);
+    return this.postForm<ServerBoard>('/boards', formData);
   }
 
-  async updateBoard(id: string, boardData: Partial<Board>): Promise<ApiResponse<Board>> {
-    return this.put<Board>(`/api/v1/boards/${id}`, boardData);
+  async updateBoard(id: string, boardData: Partial<Board>): Promise<ApiResponse<ServerBoard>> {
+    return this.put<ServerBoard>(`/boards/${id}`, boardData);
   }
 
   async deleteBoard(id: string): Promise<ApiResponse<null>> {
-    return this.delete<null>(`/api/v1/boards/${id}`);
+    return this.delete<null>(`/boards/${id}`);
   }
 }

@@ -22,7 +22,13 @@ export interface Screen {
 }
 
 export interface Board {
-  id: string;
   title: string;
   screens: Screen[];
+}
+
+export interface ServerBoard extends Board {
+  id: string;
+  expiredAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
