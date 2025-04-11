@@ -24,6 +24,13 @@ const router = createRouter({
       name: 'SingleBoard',
       component: () => import('../views/boards/SingleBoardView.vue'),
     },
+    {
+      path: '/:id',
+      redirect: (to) => ({
+        name: 'SingleBoard',
+        params: { id: to.params.id },
+      }),
+    },
   ],
 });
 
